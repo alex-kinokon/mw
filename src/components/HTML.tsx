@@ -3,16 +3,30 @@ import { useLayoutEffect, useRef } from "react";
 export function HTML({
   children,
   tag: Tag = "span",
+  refCallback,
 }: {
   children: string;
   tag?: "div" | "span";
+  refCallback?: (ref: HTMLElement) => void;
 }) {
   const ref = useRef<HTMLElement>(null);
+
   useLayoutEffect(() => {
     ref.current!.setHTML(children);
+    refCallback?.(ref.current!);
   }, [children]);
 
+  useLayoutEffect(() => {
+    if (ref.current) {
+      refCallback?.(ref.current);
+    }
+  }, [refCallback]);
+
   return <Tag ref={ref as any} />;
+}
+
+if (typeof Sanitizer === "undefined") {
+  await import("./polyfill");
 }
 
 declare global {

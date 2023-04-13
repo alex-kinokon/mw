@@ -44,6 +44,18 @@ export interface QueryResponse<T> {
   query: T;
 }
 
+export interface ParseResponseSection {
+  toclevel: number;
+  level: `${number}`;
+  line: string;
+  number: `${number}` | `${number}.${number}` | string;
+  index: `${number}`;
+  fromtitle: string;
+  byteoffset: number;
+  anchor: string;
+  linkAnchor: string;
+}
+
 export interface ParseResponse {
   title: "définir";
   pageid: number;
@@ -74,17 +86,7 @@ export interface ParseResponse {
   }[];
   images: string[];
   externallinks: URI[];
-  sections: {
-    toclevel: number;
-    level: `${number}`;
-    line: string;
-    number: `${number}` | `${number}.${number}` | string;
-    index: `${number}`;
-    fromtitle: string;
-    byteoffset: number;
-    anchor: string;
-    linkAnchor: string;
-  }[];
+  sections: ParseResponseSection[];
   showtoc: "";
   parsewarnings: [];
   displaytitle: string;

@@ -51,15 +51,27 @@ export default function Layout({
   title,
   prefix,
   children,
+  sidebarContent,
 }: {
   title?: React.ReactNode;
   prefix?: React.ReactNode;
+  sidebarContent?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
-    <Box minH="100vh" bg={useColorModeValue("gray.100", "gray.900")}>
-      <SidebarContent onClose={() => onClose} display={{ base: "none", md: "block" }} />
+    <Box
+      className={css`
+        background-color: var(--color-canvas-default);
+        min-height: 100vh;
+      `}
+      _dark={{
+        backgroundColor: "#121212",
+      }}
+    >
+      <SidebarContent onClose={() => onClose} display={{ base: "none", md: "block" }}>
+        {sidebarContent}
+      </SidebarContent>
       <Drawer
         autoFocus={false}
         isOpen={isOpen}
@@ -86,15 +98,16 @@ interface SidebarProps extends BoxProps {
   onClose: () => void;
 }
 
-const SidebarContent = ({ onClose, ...rest }: SidebarProps) => (
+const SidebarContent = ({ onClose, children, ...rest }: SidebarProps) => (
   <Box
-    transition="3s ease"
-    bg={useColorModeValue("white", "gray.900")}
-    borderRight="1px"
     borderRightColor={useColorModeValue("gray.200", "gray.700")}
     w={{ base: "full", md: 60 }}
-    pos="fixed"
     h="full"
+    className={css`
+      border-right-width: 1px;
+      transition: 3s ease;
+      position: fixed;
+    `}
     {...rest}
   >
     <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
@@ -106,6 +119,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => (
         {link.name}
       </NavItem>
     ))}
+    {children}
   </Box>
 );
 
@@ -118,29 +132,38 @@ const NavItem = ({ icon, children, href, ...rest }: NavItemProps) => (
   <Link
     as={RouterLink}
     to={href}
-    style={{ textDecoration: "none" }}
-    _focus={{ boxShadow: "none" }}
+    className={css`
+      text-decoration: none;
+      &:focus {
+        box-shadow: none;
+      }
+    `}
   >
     <Flex
-      align="center"
-      p="4"
+      px="4"
+      py="2"
       mx="4"
       borderRadius="lg"
       role="group"
-      cursor="pointer"
       _hover={{
         bg: "cyan.400",
         color: "white",
       }}
+      className={css`
+        align-items: center;
+        cursor: pointer;
+      `}
       {...rest}
     >
       {icon && (
         <Icon
           mr="4"
-          fontSize="16"
           _groupHover={{
             color: "white",
           }}
+          className={css`
+            font-size: 16px;
+          `}
           as={icon}
         />
       )}
@@ -159,11 +182,12 @@ const MobileNav = ({ onOpen, title, ...rest }: MobileProps) => (
     ml={{ base: 0, md: 60 }}
     px={{ base: 4, md: 4 }}
     height="12"
-    alignItems="center"
-    bg={useColorModeValue("white", "gray.900")}
-    borderBottomWidth="1px"
     borderBottomColor={useColorModeValue("gray.200", "gray.700")}
     justifyContent={{ base: "space-between", md: "flex-end" }}
+    className={css`
+      border-bottom-width: 1px;
+      align-items: center;
+    `}
     {...rest}
   >
     <IconButton
@@ -201,10 +225,7 @@ const MobileNav = ({ onOpen, title, ...rest }: MobileProps) => (
               </Box>
             </HStack>
           </MenuButton>
-          <MenuList
-            bg={useColorModeValue("white", "gray.900")}
-            borderColor={useColorModeValue("gray.200", "gray.700")}
-          >
+          <MenuList borderColor={useColorModeValue("gray.200", "gray.700")}>
             <MenuItem>Profile</MenuItem>
             <MenuItem>Settings</MenuItem>
             <MenuItem>Billing</MenuItem>

@@ -63,7 +63,7 @@ export const Search = <T extends { key: string }>(props: Props<T>) => {
   }, []);
 
   return (
-    <Box position="relative" {...rest}>
+    <Box position="relative" padding="2px" {...rest}>
       <InputGroup>
         {iconPosition === "left" && (
           <InputLeftElement

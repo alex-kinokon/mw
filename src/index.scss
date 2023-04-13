@@ -1,0 +1,15 @@
+@import "@primer/primitives/dist/scss/colors/_light.scss";
+@import "@primer/primitives/dist/scss/colors/_dark.scss";
+
+body {
+  -moz-osx-font-smoothing: initial;
+  -webkit-font-smoothing: initial;
+  text-rendering: auto;
+}
+
+:root[data-theme="light"] {
+  @include primer-colors-light();
+}
+:root[data-theme="dark"] {
+  @include primer-colors-dark();
+}
