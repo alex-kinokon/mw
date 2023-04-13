@@ -1,4 +1,5 @@
 import type { BoxProps, FlexProps } from "@chakra-ui/react";
+import { css } from "@emotion/css";
 import {
   Avatar,
   Box,
@@ -20,6 +21,7 @@ import {
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
+import { Link as RouterLink } from "react-router-dom";
 import {
   FiBell,
   FiChevronDown,
@@ -35,16 +37,25 @@ import type { IconType } from "react-icons";
 interface LinkItemProps {
   name: string;
   icon: IconType;
+  href: string;
 }
 const LinkItems: Array<LinkItemProps> = [
-  { name: "Home", icon: FiHome },
-  { name: "Trending", icon: FiTrendingUp },
-  { name: "Explore", icon: FiCompass },
-  { name: "Favourites", icon: FiStar },
-  { name: "Settings", icon: FiSettings },
+  { name: "Home", icon: FiHome, href: "/" },
+  { name: "Trending", icon: FiTrendingUp, href: "/" },
+  { name: "Explore", icon: FiCompass, href: "/" },
+  { name: "Favorites", icon: FiStar, href: "/" },
+  { name: "Settings", icon: FiSettings, href: "/" },
 ];
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout({
+  title,
+  prefix,
+  children,
+}: {
+  title?: React.ReactNode;
+  prefix?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <Box minH="100vh" bg={useColorModeValue("gray.100", "gray.900")}>
@@ -62,8 +73,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <SidebarContent onClose={onClose} />
         </DrawerContent>
       </Drawer>
-      {/* mobilenav */}
-      <MobileNav onOpen={onOpen} />
+      <MobileNav onOpen={onOpen} title={title} />
+      {prefix != null && <Box ml={{ base: 0, md: 60 }}>{prefix}</Box>}
       <Box ml={{ base: 0, md: 60 }} p="4">
         {children}
       </Box>
@@ -87,13 +98,11 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => (
     {...rest}
   >
     <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
-      <Text fontSize="2xl" fontFamily="monospace" fontWeight="bold">
-        Logo
-      </Text>
+      <Text>Wikipedia</Text>
       <CloseButton display={{ base: "flex", md: "none" }} onClick={onClose} />
     </Flex>
     {LinkItems.map(link => (
-      <NavItem key={link.name} icon={link.icon}>
+      <NavItem key={link.name} icon={link.icon} href={link.href}>
         {link.name}
       </NavItem>
     ))}
@@ -102,10 +111,16 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => (
 
 interface NavItemProps extends FlexProps {
   icon: IconType;
-  children: string;
+  children: React.ReactNode;
+  href: string;
 }
-const NavItem = ({ icon, children, ...rest }: NavItemProps) => (
-  <Link href="#" style={{ textDecoration: "none" }} _focus={{ boxShadow: "none" }}>
+const NavItem = ({ icon, children, href, ...rest }: NavItemProps) => (
+  <Link
+    as={RouterLink}
+    to={href}
+    style={{ textDecoration: "none" }}
+    _focus={{ boxShadow: "none" }}
+  >
     <Flex
       align="center"
       p="4"
@@ -134,14 +149,16 @@ const NavItem = ({ icon, children, ...rest }: NavItemProps) => (
   </Link>
 );
 
-interface MobileProps extends FlexProps {
-  onOpen: () => void;
+interface MobileProps extends Omit<FlexProps, "title"> {
+  title?: React.ReactNode | null;
+  onOpen(): void;
 }
-const MobileNav = ({ onOpen, ...rest }: MobileProps) => (
+
+const MobileNav = ({ onOpen, title, ...rest }: MobileProps) => (
   <Flex
     ml={{ base: 0, md: 60 }}
     px={{ base: 4, md: 4 }}
-    height="20"
+    height="12"
     alignItems="center"
     bg={useColorModeValue("white", "gray.900")}
     borderBottomWidth="1px"
@@ -157,14 +174,7 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => (
       icon={<FiMenu />}
     />
 
-    <Text
-      display={{ base: "flex", md: "none" }}
-      fontSize="2xl"
-      fontFamily="monospace"
-      fontWeight="bold"
-    >
-      Logo
-    </Text>
+    {title}
 
     <HStack spacing={{ base: "0", md: "6" }}>
       <IconButton size="lg" variant="ghost" aria-label="open menu" icon={<FiBell />} />
@@ -184,10 +194,7 @@ const MobileNav = ({ onOpen, ...rest }: MobileProps) => (
                 spacing="1px"
                 ml="2"
               >
-                <Text fontSize="sm">Justina Clark</Text>
-                <Text fontSize="xs" color="gray.600">
-                  Admin
-                </Text>
+                <Text fontSize="sm">Guest</Text>
               </VStack>
               <Box display={{ base: "none", md: "flex" }}>
                 <FiChevronDown />
