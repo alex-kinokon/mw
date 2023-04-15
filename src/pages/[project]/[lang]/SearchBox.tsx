@@ -3,23 +3,23 @@ import { useQuery } from "@tanstack/react-query";
 import { Link as RouterLink } from "react-router-dom";
 import { useState } from "react";
 import { HTML } from "~/components/HTML";
-import * as wiki from "~/wiki";
+import type { MediaWiki, SearchResponse } from "~/wiki";
 import { Search } from "~/components/Search";
 import { useDebouncedValue } from "~/hooks/useDebouncedValue";
 
 interface SearchBoxProps {
-  host: string;
+  wiki: MediaWiki;
 }
 
-export function SearchBox({ host }: SearchBoxProps) {
+export function SearchBox({ wiki }: SearchBoxProps) {
   const [value, setValue] = useState("");
   const debouncedValue = useDebouncedValue(value, 500);
 
   const { data } = useQuery({
     enabled: debouncedValue.length > 0,
-    queryKey: ["search", host, debouncedValue],
+    queryKey: ["search", wiki.host, debouncedValue],
     queryFn: () =>
-      wiki.query<wiki.SearchResponse>(host, {
+      wiki.query<SearchResponse>({
         list: "search",
         srsearch: debouncedValue,
         utf8: true,

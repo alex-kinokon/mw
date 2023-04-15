@@ -7,6 +7,7 @@ export const data: {
 }[] = [
   { path: "/", render: () => import("./pages/index.page") },
   { path: "/:project/:lang/:page", render: () => import("./pages/[project]/[lang]/[page].page") },
+  { path: "/:project/:lang", render: () => import("./pages/[project]/[lang]/index.page") },
 ];
 
 export default createBrowserRouter(

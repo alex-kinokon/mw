@@ -7,6 +7,10 @@ body {
   text-rendering: auto;
 }
 
+:root {
+  --font-weight-bold: 600;
+}
+
 :root[data-theme="light"] {
   @include primer-colors-light();
 }

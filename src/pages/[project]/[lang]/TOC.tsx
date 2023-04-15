@@ -9,6 +9,7 @@ export function TOC({ value }: { value: wiki.ParseResponseSection[] }) {
       className={css`
         border-top: 1px solid var(--color-border-muted);
         overflow: scroll;
+        max-height: 100%;
       `}
     >
       {value.map(item => (

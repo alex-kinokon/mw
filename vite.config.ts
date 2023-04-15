@@ -11,5 +11,21 @@ export default defineConfig({
       },
     }),
     tsconfigPaths(),
+
+    /**
+     * Vite doesn't handle fallback html with dot (.), see https://github.com/vitejs/vite/issues/2415
+     * https://github.com/bluwy/publint/blob/f84b81e2c9f0191e4aab99fe20b7e1ba385f1ec7/site/vite.config.js#L32-L51
+     */
+    {
+      name: "spa-fallback-with-dot",
+      configureServer: server => () => {
+        server.middlewares.use((req, _res, next) => {
+          if (req.url?.includes(".") && !req.url.endsWith(".html")) {
+            req.url = "/index.html";
+          }
+          next();
+        });
+      },
+    },
   ],
 });

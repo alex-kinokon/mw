@@ -1,12 +1,25 @@
 import { Helmet } from "react-helmet-async";
-import { Box, Heading, Progress, Skeleton } from "@chakra-ui/react";
+import {
+  Box,
+  Heading,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Progress,
+  Skeleton,
+} from "@chakra-ui/react";
+import { BsGlobe } from "react-icons/bs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link as RouterLink, useNavigate, useParams } from "react-router-dom";
 import { useMemo } from "react";
+import { css, cx } from "@emotion/css";
 import { HTML } from "~/components/HTML";
 import { useEvent } from "~/hooks/useEvent";
 import Layout from "~/layouts/index";
-import * as wiki from "~/wiki";
+import type { ParseResponse } from "~/wiki";
+import { MediaWiki, getHost } from "~/wiki";
 import { ScrollToTop } from "~/components/ScrollToTop";
 import { applyDarkMode } from "~/dark-mode/bootstrap";
 import { TOC } from "./TOC";
@@ -14,28 +27,33 @@ import { SearchBox } from "./SearchBox";
 import { createQueryOptions } from "~/utils/react-query";
 import { usePageStyles } from "./pageStyles";
 import { Content } from "./Content";
-
-export interface PageRoute {
-  readonly host: string;
-  readonly page: string;
-}
+import { PageTabs } from "./Tabs";
 
 const MOBILE = { display: { base: "flex", md: "none" } } as const;
 const DESKTOP = { display: { base: "none", md: "flex" }, flex: { md: "1" } } as const;
 
-const createPageQuery = (route: PageRoute) =>
+const createPageQuery = (wiki: MediaWiki, page: string) =>
   createQueryOptions({
-    queryKey: ["page", route] as const,
-    queryFn: async ({ queryKey: [, route] }) => {
-      const { parse } = await wiki.parse(route.host, {
+    queryKey: ["page", wiki.host, page] as const,
+    queryFn: async () => {
+      const { parse } = await wiki.parse<ParseResponse>({
         format: "json",
         origin: "*",
         redirects: true,
-        page: decodeURIComponent(route.page),
+        page: decodeURIComponent(page),
       });
       return parse;
     },
   });
+
+function getHref(a: EventTarget, prefix: string) {
+  if (!(a instanceof HTMLAnchorElement)) return;
+
+  const href = a.getAttribute("href")!;
+  if (href.startsWith(prefix)) {
+    return href.slice(prefix.length);
+  }
+}
 
 export default function Page() {
   const navigate = useNavigate();
@@ -46,32 +64,25 @@ export default function Page() {
   };
   const { project, lang, page } = params;
 
-  const host = useMemo(() => wiki.getHost(project, lang), [project, lang]);
-  const route: PageRoute = useMemo(() => ({ host, page }), [host, page]);
-
+  const mediaWiki = useMemo(() => new MediaWiki(getHost(project, lang)), [project, lang]);
   const queryClient = useQueryClient();
-  const { isLoading, data, error } = useQuery(createPageQuery(route));
+  const { isLoading, data, error } = useQuery(createPageQuery(mediaWiki, page));
 
-  const className = usePageStyles(route);
+  const className = usePageStyles(mediaWiki, page);
 
   const onClick = useEvent((e: React.MouseEvent<HTMLElement>) => {
-    if (e.target instanceof HTMLAnchorElement) {
-      const href = e.target.getAttribute("href")!;
-      if (href.startsWith("/wiki/")) {
-        e.preventDefault();
-        navigate(`/${project}/${lang}/${href.slice("/wiki/".length)}`);
-      }
+    const nextPage = getHref(e.target, "/wiki/");
+    if (nextPage) {
+      e.preventDefault();
+      navigate(`../${nextPage}`, { relative: "path" });
     }
   });
 
   const onHover = useEvent((e: React.MouseEvent<HTMLElement>) => {
-    if (e.target instanceof HTMLAnchorElement) {
-      const href = e.target.getAttribute("href")!;
-      if (href.startsWith("/wiki/")) {
-        e.preventDefault();
-        const page = href.slice("/wiki/".length);
-        queryClient.prefetchQuery(createPageQuery({ host, page }));
-      }
+    const page = getHref(e.target, "/wiki/");
+    if (page) {
+      e.preventDefault();
+      queryClient.prefetchQuery(createPageQuery(mediaWiki, page));
     }
   });
 
@@ -95,9 +106,27 @@ export default function Page() {
         <>
           <Box {...MOBILE}>{value.title}</Box>
           <Box {...DESKTOP}>
-            <SearchBox host={host} />
+            <PageTabs wiki={mediaWiki} page={page} />
+            <SearchBox wiki={mediaWiki} />
           </Box>
         </>
+      }
+      titleIcons={
+        <Menu>
+          <MenuButton as={IconButton} icon={<BsGlobe />} size="lg" variant="ghost" />
+          <MenuList
+            className={css`
+              max-height: min(600px, 70vh);
+              overflow-y: auto;
+            `}
+          >
+            {value.langlinks.map(({ lang, url, autonym }) => (
+              <MenuItem key={lang} as={RouterLink} to={getLanguageLink(url)} lang={lang}>
+                {autonym}
+              </MenuItem>
+            ))}
+          </MenuList>
+        </Menu>
       }
       sidebarContent={<TOC value={value.sections} />}
     >
@@ -110,16 +139,31 @@ export default function Page() {
       <Heading fontSize="3xl" fontWeight={600} mb={3}>
         <HTML>{value.displaytitle}</HTML>
       </Heading>
-      <Content className={className} onClick={onClick} onMouseOver={onHover}>
+      <Content
+        className={cx(className, "mw-parser-output")}
+        onClick={onClick}
+        onMouseOver={onHover}
+      >
         <HTML
           tag="div"
           refCallback={node => {
             applyDarkMode(node);
           }}
         >
-          {value.text["*"]}
+          {value.text}
         </HTML>
       </Content>
     </Layout>
   );
+}
+
+function getLanguageLink(link: string) {
+  const url = new URL(link);
+  const { hostname, pathname } = url;
+  if (hostname.endsWith("wikipedia.org") || hostname.endsWith("wiktionary.org")) {
+    const [lang, host] = hostname.split(".");
+    return `/${host}/${lang}/${pathname.replace(/^\/wiki\//, "")}`;
+  }
+
+  return link;
 }

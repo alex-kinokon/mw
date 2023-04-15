@@ -1,17 +1,13 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { css } from "@emotion/css";
-import * as wiki from "~/wiki";
-import type { PageRoute } from "./[page].page";
+import type { MediaWiki } from "~/wiki";
 
-export function usePageStyles(route: PageRoute) {
-  const { host, page } = route;
+export function usePageStyles(wiki: MediaWiki, page: string) {
   const { data: head } = useQuery({
-    queryKey: ["styles", host, page],
+    queryKey: ["styles", wiki.host, page],
     queryFn: () =>
-      wiki.parse<{
-        headhtml: { "*": string };
-      }>(host, {
+      wiki.parse<{ headhtml: { "*": string } }>({
         format: "json",
         origin: "*",
         redirects: true,
@@ -33,7 +29,7 @@ export function usePageStyles(route: PageRoute) {
   const queries = useQueries({
     queries: hrefs.map(href => ({
       queryKey: ["style", href],
-      queryFn: () => fetch(`https://${host}${href}`).then(res => res.text()),
+      queryFn: () => fetch(`https://${wiki.host}${href}`).then(res => res.text()),
     })),
   });
 

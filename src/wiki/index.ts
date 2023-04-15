@@ -1,3 +1,5 @@
+import { request } from "./api.complementary";
+
 type URI = string;
 type Namespace = number;
 
@@ -37,7 +39,7 @@ export interface SearchResponse {
 
 export interface QueryResponse<T> {
   batchcomplete: "";
-  continue: {
+  continue?: {
     sroffset: number;
     continue: string;
   };
@@ -54,90 +56,236 @@ export interface ParseResponseSection {
   byteoffset: number;
   anchor: string;
   linkAnchor: string;
+  extensionData?: {
+    "DiscussionTools-html-summary"?: string;
+  };
 }
 
 export interface ParseResponse {
-  title: "définir";
   pageid: number;
   revid: number;
-  text: {
-    "*": string;
-  };
+  text: string;
+  title: string;
   langlinks: {
     lang: string;
     url: string;
     langname: string;
     autonym: string;
-    "*": string;
+    title: string;
   }[];
   categories: {
     sortkey: string;
-    "*": string;
+    category: string;
+    hidden?: boolean;
   }[];
   links: {
     ns: Namespace;
-    exists?: "";
-    "*": string;
+    exists?: boolean;
+    title: string;
   }[];
   templates: {
     ns: Namespace;
-    exists?: "";
-    "*": string;
+    exists?: boolean;
+    title: string;
   }[];
   images: string[];
   externallinks: URI[];
   sections: ParseResponseSection[];
-  showtoc: "";
+  showtoc: boolean;
   parsewarnings: [];
   displaytitle: string;
   iwlinks: {
-    prefix: "w";
+    prefix: string;
     url: string;
-    "*": string;
+    title: string;
   }[];
   properties: {
-    name: string;
-    "*": string;
-  }[];
+    defaultsort: string;
+    page_image_free: string;
+    // [`wikibase-badge-${string}`]: boolean;
+    "wikibase-shortdesc": string;
+    wikibase_item: string;
+  };
+}
+
+declare namespace SiteInfo {
+  interface General {
+    mainpage: string;
+    base: string;
+    sitename: string;
+    mainpageisdomainroot: boolean;
+    logo: string;
+    generator: string;
+    phpversion: string;
+    phpsapi: string;
+    dbtype: "mysql";
+    dbversion: string;
+    imagewhitelistenabled: boolean;
+    langconversion: boolean;
+    linkconversion: boolean;
+    titleconversion: boolean;
+    linkprefixcharset: string;
+    linkprefix: string;
+    linktrail: string;
+    legaltitlechars: string;
+    invalidusernamechars: string;
+    allunicodefixes: boolean;
+    fixarabicunicode: boolean;
+    fixmalayalamunicode: boolean;
+    "git-hash": string;
+    "git-branch": string;
+    case: "first-letter";
+    lang: string;
+    fallback: [];
+    rtl: false;
+    fallback8bitEncoding: "windows-1252";
+    readonly: false;
+    writeapi: boolean;
+    maxarticlesize: 2097152;
+    timezone: "UTC";
+    timeoffset: 0;
+    articlepath: string;
+    scriptpath: string;
+    script: string;
+    variantarticlepath: boolean;
+    server: string;
+    servername: string;
+    wikiid: string;
+    time: string;
+    misermode: boolean;
+    uploadsenabled: boolean;
+    maxuploadsize: number;
+    minuploadchunksize: number;
+    galleryoptions: {
+      imagesPerRow: number;
+      imageWidth: number;
+      imageHeight: number;
+      captionLength: boolean;
+      showBytes: boolean;
+      mode: string;
+      showDimensions: boolean;
+    };
+    thumblimits: {
+      [index: string]: number;
+    };
+    imagelimits: {
+      [index: string]: {
+        width: 320;
+        height: 240;
+      };
+    };
+    favicon: string;
+    centralidlookupprovider: string;
+    allcentralidlookupproviders: string[];
+    interwikimagic: boolean;
+    magiclinks: {
+      ISBN: boolean;
+      PMID: boolean;
+      RFC: boolean;
+    };
+    categorycollation: string;
+    nofollowlinks: boolean;
+    nofollownsexceptions: unknown[];
+    nofollowdomainexceptions: string[];
+    externallinktarget: boolean;
+    "wmf-config": {
+      wmfMasterDatacenter: string;
+      wmfEtcdLastModifiedIndex: number;
+      wmgCirrusSearchDefaultCluster: string;
+      wgCirrusSearchDefaultCluster: string;
+    };
+    extensiondistributor: {
+      snapshots: string[];
+      list: "";
+    };
+    mobileserver: string;
+    "readinglists-config": {
+      maxListsPerUser: number;
+      maxEntriesPerList: number;
+      deletedRetentionDays: number;
+    };
+    citeresponsivereferences: boolean;
+    linter: {
+      high: string[];
+      medium: string[];
+      low: string[];
+    };
+    "pageviewservice-supported-metrics": {
+      pageviews: {
+        pageviews: boolean;
+        uniques: boolean;
+      };
+      siteviews: {
+        pageviews: boolean;
+        uniques: boolean;
+      };
+      mostviewed: {
+        pageviews: boolean;
+        uniques: boolean;
+      };
+    };
+  }
+
+  interface Namespace {
+    [number: string]: {
+      id: number;
+      case: "first-letter";
+      name: string;
+      subpages: boolean;
+      canonical: string;
+      content: boolean;
+      nonincludable: boolean;
+      namespaceprotection?: "editinterface";
+      defaultcontentmodel?: "GadgetDefinition";
+    };
+  }
+
+  interface NamespaceAliases {
+    id: number;
+    alias: "Image";
+  }
 }
 
 interface Options {
-  [key: string]: string | number | boolean;
+  [key: string]: string | number | boolean | string[];
 }
 
-export function parse<T = ParseResponse>(host: string, options: Options) {
-  return get<{ parse: T }>(host, { ...options, action: "parse" });
-}
+export class MediaWiki {
+  constructor(readonly host: string) {}
 
-export function query<T = unknown>(host: string, options: Options) {
-  return get<QueryResponse<T>>(host, { ...options, action: "query" });
-}
-
-export async function get<R = unknown>(host: string, options: Options) {
-  const res = await fetch(
-    `https://${host}/w/api.php?` + new URLSearchParams(options as any),
-    {
-      method: "GET",
-      redirect: "follow",
-    }
-  );
-  if (!res.ok) {
-    throw new Error(res.statusText);
+  parse<T = unknown>(options: Options) {
+    return this.get<{ parse: T }>("GET", {
+      ...options,
+      action: "parse",
+      formatVersion: 2,
+    });
   }
 
-  const json = await res.json();
-
-  if ("error" in json) {
-    const error = new Error((json as APIError).error!.info) as Error & { code: string };
-    error.code = json.error.code;
-    throw error;
-  }
-  if ("warnings" in json) {
-    console.warn(json.warnings[options.action as string] ?? json.warnings);
+  query<T = unknown>(options: Options) {
+    return this.get<QueryResponse<T>>("GET", { ...options, action: "query" });
   }
 
-  return json as R;
+  async siteInfo() {
+    // https://www.mediawiki.org/w/api.php?action=query&meta=siteinfo&siprop=general|namespaces|namespacealiases
+    return await this.query<{
+      general: SiteInfo.General;
+      namespaces: SiteInfo.Namespace;
+      namespacealiases: SiteInfo.NamespaceAliases[];
+    }>({
+      meta: "siteinfo",
+      siProp: ["general", "namespaces", "namespaceAliases"].map(lower),
+      format: "json",
+      formatVersion: 2,
+      origin: "*",
+    });
+  }
+
+  async get<R = unknown>(method: "GET" | "POST", options: Options) {
+    return await request<R>(`https://${this.host}/w/api.php`, method, options);
+  }
 }
+
+const lower = (str: string) => str.toLowerCase();
 
 export function getHost(project: string, lang: string) {
   switch (project) {

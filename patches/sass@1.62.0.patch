@@ -1,0 +1,19 @@
+diff --git a/sass.dart.js b/sass.dart.js
+index 467cd484499d5d9429c233709eda874ca8daeb3d..abdece9b67952d53e6d5f1e457fa6ad6589eb159 100644
+--- a/sass.dart.js
++++ b/sass.dart.js
+@@ -18147,6 +18147,14 @@ self.fs = _cliPkgRequires.fs;
+           A.throwExpression(A.ArgumentError$(string$.parsed, null));
+         else {
+           t2 = value.value;
++          if (
++            t2 instanceof A.SassList0 ||
++            t2 instanceof A.SassColor0 ||
++            t2 instanceof A.UnitlessSassNumber0 ||
++            t2 instanceof A.SingleUnitSassNumber0
++          ) {
++            t2 = value.value = new A.SassString0(t2.toString$0(0), false, value.span);
++          }
+           if (!(t2 instanceof A.SassString0))
+             A.throwExpression(A.ArgumentError$(string$.If_par + value.toString$0(0) + "` of type " + A.getRuntimeType(t2).toString$0(0) + ").", null));
+         }

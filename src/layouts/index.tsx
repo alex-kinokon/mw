@@ -49,11 +49,13 @@ const LinkItems: Array<LinkItemProps> = [
 
 export default function Layout({
   title,
+  titleIcons,
   prefix,
   children,
   sidebarContent,
 }: {
   title?: React.ReactNode;
+  titleIcons?: React.ReactNode;
   prefix?: React.ReactNode;
   sidebarContent?: React.ReactNode;
   children: React.ReactNode;
@@ -85,7 +87,7 @@ export default function Layout({
           <SidebarContent onClose={onClose} />
         </DrawerContent>
       </Drawer>
-      <MobileNav onOpen={onOpen} title={title} />
+      <MobileNav onOpen={onOpen} title={title} icons={titleIcons} />
       {prefix != null && <Box ml={{ base: 0, md: 60 }}>{prefix}</Box>}
       <Box ml={{ base: 0, md: 60 }} p="4">
         {children}
@@ -173,11 +175,12 @@ const NavItem = ({ icon, children, href, ...rest }: NavItemProps) => (
 );
 
 interface MobileProps extends Omit<FlexProps, "title"> {
-  title?: React.ReactNode | null;
+  title?: React.ReactNode;
+  icons?: React.ReactNode;
   onOpen(): void;
 }
 
-const MobileNav = ({ onOpen, title, ...rest }: MobileProps) => (
+const MobileNav = ({ onOpen, title, icons, ...rest }: MobileProps) => (
   <Flex
     ml={{ base: 0, md: 60 }}
     px={{ base: 4, md: 4 }}
@@ -200,9 +203,15 @@ const MobileNav = ({ onOpen, title, ...rest }: MobileProps) => (
 
     {title}
 
-    <HStack spacing={{ base: "0", md: "6" }}>
+    <HStack spacing={{ base: "0" }}>
+      {icons}
       <IconButton size="lg" variant="ghost" aria-label="open menu" icon={<FiBell />} />
-      <Flex alignItems={"center"}>
+      <div
+        className={css`
+          display: flex;
+          align-items: center;
+        `}
+      >
         <Menu>
           <MenuButton py={2} transition="all 0.3s" _focus={{ boxShadow: "none" }}>
             <HStack>
@@ -233,7 +242,7 @@ const MobileNav = ({ onOpen, title, ...rest }: MobileProps) => (
             <MenuItem>Sign out</MenuItem>
           </MenuList>
         </Menu>
-      </Flex>
+      </div>
     </HStack>
   </Flex>
 );
