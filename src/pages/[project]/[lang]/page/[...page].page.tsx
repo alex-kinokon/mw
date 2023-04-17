@@ -12,22 +12,22 @@ import {
 } from "@chakra-ui/react";
 import { BsGlobe } from "react-icons/bs";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link as RouterLink, useNavigate, useParams } from "react-router-dom";
-import { useMemo } from "react";
+import { Link as RouterLink, useLocation } from "wouter";
 import { css, cx } from "@emotion/css";
 import { HTML } from "~/components/HTML";
 import { useEvent } from "~/hooks/useEvent";
 import Layout from "~/layouts/index";
-import type { ParseResponse } from "~/wiki";
-import { MediaWiki, getHost } from "~/wiki";
+import type { Action } from "~/wiki";
+import type { MediaWiki } from "~/wiki";
 import { ScrollToTop } from "~/components/ScrollToTop";
 import { applyDarkMode } from "~/dark-mode/bootstrap";
-import { TOC } from "./TOC";
-import { SearchBox } from "./SearchBox";
+import { TOC } from "../TOC";
+import { SearchBox } from "../SearchBox";
 import { createQueryOptions } from "~/utils/react-query";
-import { usePageStyles } from "./pageStyles";
-import { Content } from "./Content";
-import { PageTabs } from "./Tabs";
+import { usePageStyles } from "../_pageStyles";
+import { Content } from "../_styled";
+import { PageTabs } from "../Tabs";
+import { useMediaWiki } from "~/pages/_utils";
 
 const MOBILE = { display: { base: "flex", md: "none" } } as const;
 const DESKTOP = { display: { base: "none", md: "flex" }, flex: { md: "1" } } as const;
@@ -36,8 +36,7 @@ const createPageQuery = (wiki: MediaWiki, page: string) =>
   createQueryOptions({
     queryKey: ["page", wiki.host, page] as const,
     queryFn: async () => {
-      const { parse } = await wiki.parse<ParseResponse>({
-        format: "json",
+      const { parse } = await wiki.action.parse<{ parse: Action.ParsePageResponse }>({
         origin: "*",
         redirects: true,
         page: decodeURIComponent(page),
@@ -55,16 +54,17 @@ function getHref(a: EventTarget, prefix: string) {
   }
 }
 
-export default function Page() {
-  const navigate = useNavigate();
-  const params = useParams() as unknown as {
-    readonly project: string;
-    readonly lang: string;
-    readonly page: string;
-  };
+interface PageParams {
+  readonly project: string;
+  readonly lang: string;
+  readonly page: string;
+}
+
+export default function Page({ params }: { params: PageParams }) {
+  const [, navigate] = useLocation();
   const { project, lang, page } = params;
 
-  const mediaWiki = useMemo(() => new MediaWiki(getHost(project, lang)), [project, lang]);
+  const mediaWiki = useMediaWiki(project, lang);
   const queryClient = useQueryClient();
   const { isLoading, data, error } = useQuery(createPageQuery(mediaWiki, page));
 
@@ -74,7 +74,7 @@ export default function Page() {
     const nextPage = getHref(e.target, "/wiki/");
     if (nextPage) {
       e.preventDefault();
-      navigate(`../${nextPage}`, { relative: "path" });
+      navigate(`./${nextPage}`);
     }
   });
 

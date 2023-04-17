@@ -1,9 +1,9 @@
 import { Box, Text } from "@chakra-ui/react";
 import { useQuery } from "@tanstack/react-query";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink } from "wouter";
 import { useState } from "react";
 import { HTML } from "~/components/HTML";
-import type { MediaWiki, SearchResponse } from "~/wiki";
+import type { MediaWiki } from "~/wiki";
 import { Search } from "~/components/Search";
 import { useDebouncedValue } from "~/hooks/useDebouncedValue";
 
@@ -18,18 +18,10 @@ export function SearchBox({ wiki }: SearchBoxProps) {
   const { data } = useQuery({
     enabled: debouncedValue.length > 0,
     queryKey: ["search", wiki.host, debouncedValue],
-    queryFn: () =>
-      wiki.query<SearchResponse>({
-        list: "search",
-        srsearch: debouncedValue,
-        utf8: true,
-        format: "json",
-        origin: "*",
-      }),
+    queryFn: () => wiki.rest.autocompleteTitle(debouncedValue).then(_ => _.pages),
   });
 
-  const searchItems =
-    data?.query.search.map(item => ({ ...item, key: item.title })) ?? [];
+  const searchItems = data?.map(item => ({ ...item, key: item.title })) ?? [];
 
   return (
     <Search
@@ -45,13 +37,10 @@ export function SearchBox({ wiki }: SearchBoxProps) {
       onResultSelect={() => {}}
       resultRenderer={item => (
         <Box>
-          <RouterLink
-            to={`../${encodeURIComponent(item.title.replaceAll(" ", "_"))}`}
-            relative="path"
-          >
+          <RouterLink to={`./${encodeURIComponent(item.title.replaceAll(" ", "_"))}`}>
             <Text fontWeight={500}>{item.title}</Text>
             <Text fontSize="sm">
-              <HTML>{item.snippet}</HTML>
+              <HTML>{item.description || ""}</HTML>
             </Text>
           </RouterLink>
         </Box>

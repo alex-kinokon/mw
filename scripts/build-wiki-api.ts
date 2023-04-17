@@ -2,14 +2,53 @@
 import fs from "fs";
 import { resolve } from "path";
 import { format } from "prettier";
-import { camelCase } from "lodash";
+// @ts-expect-error
+import yaml from "yaml";
 import { NodeHtmlMarkdown } from "node-html-markdown";
+import { camelCase } from "lodash";
+
+const capitalize = (str: string) => str[0].toUpperCase() + str.slice(1);
+const uncapitalize = (str: string) => str[0].toLowerCase() + str.slice(1);
 
 const nhm = new NodeHtmlMarkdown(
   /* options (optional) */ {},
   /* customTransformers (optional) */ {
     var: { prefix: "`", postfix: "`" },
     kbd: { prefix: "`", postfix: "`" },
+    dl({ node }) {
+      const arr: { dt: Node[]; dd: Node }[] = [];
+      let currentDtNodes: Node[] = [];
+
+      for (let i = 0; i < node.childNodes.length; i++) {
+        const childNode = node.childNodes[i] as Node & { rawTagName?: string };
+
+        if (childNode.rawTagName === "dt") {
+          // We've found a new <dt> element, so create a new array for its nodes
+          currentDtNodes = [childNode];
+        } else if (childNode.rawTagName === "dd") {
+          // We've found a <dd> element, so add it to the array along with the current <dt> nodes
+          arr.push({ dt: currentDtNodes, dd: childNode });
+        } else if (childNode.textContent?.trim()) {
+          // This is a text node or some other element, so add it to the current <dt> nodes
+          currentDtNodes.push(childNode);
+        }
+      }
+
+      const markdownList: string = arr
+        .map(({ dt, dd }) => {
+          const dtMarkdown = dt
+            .map(d => nhm.translate(d.textContent!))
+            .map(name => "`" + name + "`")
+            .join(", ");
+          const ddMarkdown = nhm.translate(dd.textContent!);
+          return `* ${dtMarkdown}: ${ddMarkdown}`;
+        })
+        .join("\n");
+
+      return {
+        content: markdownList,
+      };
+    },
   },
   /* customCodeBlockTranslators (optional) */ undefined
 );
@@ -70,7 +109,51 @@ const Hosts = {
   Test: "https://test.wikipedia.org/w/api.php",
 };
 
-async function getModuleDefinition(module: string) {
+const data = yaml.parse(fs.readFileSync(resolve(__dirname, "wiki-routes.yml"), "utf-8"));
+const methodNameMap = new Map<string, string>(
+  Object.entries(data.methodNameMap as Record<string, string>).map(
+    ([key, value]) =>
+      [key.toLowerCase(), value === null ? capitalize(key) : value] as const
+  )
+);
+const complementary = fs.readFileSync("src/wiki/utils.ts", "utf-8");
+
+const nameMap = new Map(
+  (data.routes as string[]).map(name => [name.toLowerCase(), name])
+);
+
+function getNormalizedName(module: Module) {
+  const { name, classname } = module;
+  if (methodNameMap.has(module.path)) {
+    return methodNameMap.get(module.path)!;
+  }
+
+  let res = name;
+  if (nameMap.has(name)) {
+    res = nameMap.get(name)!;
+  } else {
+    const index = classname.toUpperCase().indexOf(name.toUpperCase());
+    if (name.includes("-")) {
+      res = camelCase(name);
+    } else if (index === -1) {
+      res = name;
+    } else {
+      res = classname.slice(index, index + name.length);
+    }
+  }
+
+  res = camelCase(module.mustbeposted ? `set_${res}` : `get_${res}`)
+    .replace("getGet", "get")
+    .replace("setSet", "set");
+
+  return capitalize(res);
+}
+
+interface ModulePlus extends Module {
+  normalizedName: string;
+}
+
+async function getModuleDefinition(module: string): Promise<ModulePlus[]> {
   const json = await getJSON<{ paraminfo: ParamInfo }>(Hosts.MediaWiki, {
     action: "paraminfo",
     format: "json",
@@ -79,17 +162,34 @@ async function getModuleDefinition(module: string) {
     helpFormat: "html",
     useLang: "en",
   });
-  return json.paraminfo.modules[0];
+  return json.paraminfo.modules.map(
+    (module): ModulePlus => ({
+      ...module,
+      normalizedName: getNormalizedName(module),
+    })
+  );
 }
 
 async function main() {
-  const modules = await Promise.all(["paraminfo", "main"].map(getModuleDefinition));
-  let code = Array.from(getModules(modules)).filter(Boolean).join("\n");
-  try {
-    code = format(code, { parser: "babel-ts" });
-  } catch {}
+  const modules = await Promise.all(["main", "main+**"].map(getModuleDefinition));
+  // const names = modules.flat(1).map(x => x.name);
+  // fs.writeFileSync("./wiki-routes.txt", names.join("\n"));
 
-  fs.writeFileSync("src/wiki/api.ts", code);
+  let code = Array.from(
+    getModules(modules.flat(1).filter(m => m.name !== "json" && !m.internal))
+  )
+    .filter(Boolean)
+    .join("\n");
+  try {
+    code = format(code, {
+      parser: "babel-ts",
+      printWidth: 90,
+    });
+  } catch (e) {
+    console.warn("Failed to format code", e.message);
+  }
+
+  fs.writeFileSync("src/wiki/actions.generated.ts", code);
 }
 
 function* yieldComment(comment: string, close = true) {
@@ -104,32 +204,84 @@ function* yieldComment(comment: string, close = true) {
 
 function getType(type: string | string[]): string {
   if (Array.isArray(type)) {
-    return type.map(getType).join(" | ");
+    return type.length ? type.map(getType).join(" | ") : "any";
   }
 
   switch (type) {
     case "string":
+    case "boolean":
+      return type;
+    case "integer":
+      return "number";
+    case "timestamp":
       return "string";
     default:
       return JSON.stringify(type);
   }
 }
 
-function* getModules(modules: ParamInfo["modules"]) {
-  yield `
+function* getModules(modules: ModulePlus[]) {
+  yield /* js */ `
     /** spellchecker:disable */
-    import { request } from "./api.complementary";
+    import { requestJSON } from "./utils";
 
-    export class API {
+    export class ActionAPI {
       constructor(private endpoint: string) {}
+
+      protected async json<T = unknown>(method: "GET" | "POST", params: any) {
+        return requestJSON<T>("https://" + this.endpoint + "/w/api.php", method, {
+          format: "json",
+          formatVersion: 2,
+          ...params,
+        });
+      }
+      
+      protected async get<T = unknown>(params: any) {
+        return this.json<T>("GET", params);
+      }
+
+      protected async post<T = unknown>(params: any) {
+        return this.json<T>("POST", params);
+      }
     `;
+  // `}}`
 
   for (const _ of modules) {
-    yield* yieldComment(_.description);
-    yield camelCase(_.classname.replace(/Api/, ""));
-    yield `(params: ${_.classname}.Params) {`;
-    yield `  return request(this.endpoint, "GET", { format: "json", action: "${_.name}", ...params });`;
-    yield "}";
+    const name = _.normalizedName;
+    const paths = _.path.split("+");
+    const props =
+      paths.length > 1
+        ? `action: "${paths[0]}", ${_.group}: "${paths[1]}"`
+        : `action: "${_.name}"`;
+    const verb = _.mustbeposted ? "post" : "get";
+
+    yield* yieldComment(_.description, false);
+    if (_.deprecated) {
+      yield ` * @deprecated`;
+    }
+    yield ` * @method ${_.mustbeposted ? "POST" : "GET"}`;
+    yield ` * @see https://www.mediawiki.org/w/api.php?action=help&modules=${_.path}`;
+    yield " */";
+
+    const responseName = `${name}Response`;
+    const hasTypeDefinition = complementary.includes(responseName);
+    if (hasTypeDefinition) {
+      yield `${uncapitalize(name)}(`;
+    } else {
+      yield `${uncapitalize(name)}<R = any>(`;
+    }
+
+    yield `params: ${name}Params): `;
+    if (hasTypeDefinition) {
+      yield `Promise<${responseName}>`;
+    } else {
+      yield `Promise<R>`;
+    }
+
+    yield `{
+        return this.${verb}({ ${props}, ...params })
+      }
+    `;
     // yield _.name;
   }
 
@@ -138,14 +290,15 @@ function* getModules(modules: ParamInfo["modules"]) {
 
   for (const _ of modules) {
     yield "";
-    yield* yieldComment(_.description);
-    yield "declare namespace " + _.classname + " {";
     yield `
     /**
      * Query parameters for \`${_.name}\` module.
-     * @see https://www.mediawiki.org/w/api.php?action=help&modules=${_.name}
      */`;
-    yield "interface Params {";
+    yield `interface ${_.normalizedName}Params `;
+    if (_.normalizedName !== "GetMain") {
+      yield `extends GetMainParams `;
+    }
+    yield `{`;
     for (const p of _.parameters) {
       yield* yieldComment(p.description, false);
       if (p.deprecated) {
@@ -164,14 +317,12 @@ function* getModules(modules: ParamInfo["modules"]) {
         yield `  * @max ${p.highlimit}`;
       }
       yield " */";
-      yield p.name + (p.required ? "" : "?");
+      yield '"' + _.prefix + p.name + '"' + (p.required ? "" : "?");
       yield ": (";
       yield getType(p.type);
       yield ")" + (p.multi ? "[]" : "");
       yield "\n";
     }
-    yield "}";
-
     yield "}";
   }
 }
@@ -180,38 +331,46 @@ main();
 
 interface ParamInfo {
   helpformat: "html";
-  modules: {
-    name: string;
-    classname: string;
-    path: string;
-    prefix: string;
-    source: string;
-    sourcename: string;
-    licensetag: "GPL-2.0-or-later";
-    licenselink: string;
+  modules: Module[];
+}
+
+interface Module {
+  name: string;
+  classname: string;
+  path: string;
+  prefix: string;
+  source: string;
+  sourcename: string;
+  group?: string;
+  licensetag: "GPL-2.0-or-later";
+  licenselink: string;
+  description: string;
+  internal: boolean;
+  readrights: boolean;
+  writerights: boolean;
+  deprecated: boolean;
+  mustbeposted: boolean;
+  helpurls: [];
+  examples: {
+    query: string;
     description: string;
-    helpurls: [];
-    examples: {
-      query: string;
-      description: string;
-    }[];
-    parameters: {
-      default?: string;
-      deprecated?: boolean;
-      description: string;
-      index: number;
-      internalvalues?: string[];
-      multi?: boolean;
-      name: string;
-      sensitive?: "";
-      submodules: { [key: string]: string };
-      subtypes?: string[];
-      type: string | string[];
-      required: boolean;
-      limit?: number;
-      lowlimit?: number;
-      highlimit?: number;
-    }[];
-    templatedparameters: [];
   }[];
+  parameters: {
+    default?: string;
+    deprecated?: boolean;
+    description: string;
+    index: number;
+    internalvalues?: string[];
+    multi?: boolean;
+    name: string;
+    sensitive?: "";
+    submodules: { [key: string]: string };
+    subtypes?: string[];
+    type: string | string[];
+    required: boolean;
+    limit?: number;
+    lowlimit?: number;
+    highlimit?: number;
+  }[];
+  templatedparameters: [];
 }

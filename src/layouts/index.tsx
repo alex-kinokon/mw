@@ -21,7 +21,7 @@ import {
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink } from "wouter";
 import {
   FiBell,
   FiChevronDown,

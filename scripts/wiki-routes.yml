@@ -1,0 +1,195 @@
+methodNameMap:
+  abuseFilterCheckMatch:
+  abuseFilterCheckSyntax:
+  abuseFilterEvalExpression:
+  abuseFilterUnblockAutoPromote:
+  abuseLogPrivateDetails: ViewAbuseLogPrivateDetails
+  block:
+  checkToken:
+  clearHasMsg:
+  clientLogin:
+  collection+addArticle: AddArticleToCollection
+  collection+addCategory: AddCategoryToCollection
+  collection+addChapter: AddChapterToCollection
+  collection+clearCollection: ClearCollection
+  collection+postCollection: PostPagesToCollection
+  collection+removeArticle: RemovePageFromCollection
+  collection+removeItem: RemoveItemFromCollection
+  collection+renameChapter: RenameCollectionChapter
+  collection+setSorting: SetCollectionSorting
+  collection+setTitles: SetCollectionTitle
+  collection+sortItems: SortCollectionItems
+  collection+suggestArticleAction: SuggestCollectionArticleAction
+  collection+suggestUndoArticleAction: SuggestUndoCollectionArticleAction
+  compare:
+  createAccount:
+  createLocalAccount:
+  delete: DeletePage
+  deleteGlobalAccount:
+  edit:
+  emailUser:
+  flow+edit-header: EditHeader
+  flow+edit-post: EditPost
+  flow+edit-title: EditTitle
+  flow+edit-topic-summary: EditTopicSummary
+  flow+lock-topic: LockTopic
+  flow+moderate-post: ModeratePost
+  flow+moderate-topic: ModerateTopic
+  flow+new-topic: NewTopic
+  flow+view-header: ViewHeader
+  flow+view-post-history: ViewPostHistory
+  flow+view-post: ViewPost
+  flow+view-topic-history: ViewTopicHistory
+  flow+view-topic: ViewTopic
+  globalBlock:
+  import:
+  login:
+  logout:
+  manageTags:
+  massMessage:
+  mergeHistory:
+  move:
+  newsletterSubscribe: subscribeNewsletter
+  none:
+  parse:
+  protect:
+  purge:
+  removeAuthenticationData:
+  resetPassword:
+  revisionDelete: deleteRevision
+  rollback:
+  searchTranslations:
+  shortenURL:
+  thank:
+  transcodeReset: resetTranscode
+  unblock:
+  undelete:
+  unlinkAccount:
+  upload:
+  validatePassword:
+  watch:
+  wikilove: sendWikilove
+routes:
+  - AbuseFilterCheckMatch
+  - AbuseFilterCheckSyntax
+  - AbuseFilterEvalExpression
+  - AbuseFilters
+  - AbuseFilterUnblockAutoPromote
+  - AbuseLog
+  - AllCategories
+  - AllDeletedRevisions
+  - AllFileUsages
+  - AllImages
+  - AllLinks
+  - AllMessages
+  - AllPages
+  - AllRedirects
+  - AllRevisions
+  - AllTransclusions
+  - AllUsers
+  - AuthManagerInfo
+  - Babel
+  - BackLinks
+  - BetaFeatures
+  - Blocks
+  - Categories
+  - CategoryInfo
+  - CategoryMembers
+  - CentralNoticeActiveCampaigns
+  - CentralNoticeLogs
+  - CheckUser
+  - CheckUserLog
+  - CirrusBuildDoc
+  - CirrusCompSuggestBuildDoc
+  - CirrusDoc
+  - contributors
+  - DeletedRevisions
+  - DeletedRevs
+  - Description
+  - DuplicateFiles
+  - EmbeddedIn
+  - ExtDistBranches
+  - ExtDistRepos
+  - ExtLinks
+  - Extracts
+  - ExtURLUsage
+  - FeatureUsage
+  - FileArchive
+  - FileRepoinfo
+  - FileUsage
+  - FlowInfo
+  - GadgetCategories
+  - Gadgets
+  - GlobalAllUsers
+  - GlobalBlocks
+  - GlobalGroups
+  - GlobalPreferences
+  - GlobalRenameStatus
+  - GlobalUsage
+  - GlobalUserInfo
+  - ImageInfo
+  - Images
+  - ImageUsage
+  - Info
+  - IWBackLinks
+  - IWLinks
+  - LangBackLinks
+  - LangLinks
+  - LanguageInfo
+  - LanguageStats
+  - Links
+  - LinksHere
+  - LintErrors
+  - LinterStats
+  - LogEvents
+  - Main
+  - ManageMessageGroups
+  - MapData
+  - MessageCollection
+  - MessageGroups
+  - MessageGroupStats
+  - MessageTranslations
+  - MmContent
+  - MostViewed
+  - MyStashedFiles
+  - notifications
+  - oath
+  - PageImages
+  - PagePropNames
+  - PageProps
+  - PageSwithProp
+  - PageTerms
+  - PageViews
+  - ParamInfo
+  - PrefixSearch
+  - ProtectedTitles
+  - QueryPage
+  - random
+  - ReadingListEntries
+  - ReadingLists
+  - RecentChanges
+  - Redirects
+  - Revisions
+  - Search
+  - SiteInfo
+  - SiteViews
+  - StashImageInfo
+  - Tags
+  - Templates
+  - Threads
+  - Tokens
+  - TranscludedIn
+  - TranscodeStatus
+  - TranslationReview
+  - UnlinkAccount
+  - UnreadNotificationPages
+  - UserContribs
+  - UserInfo
+  - Users
+  - VideoInfo
+  - Watchlist
+  - WatchlistRaw
+  - WbEntityUsage
+  - WbListEntityUsage
+  - Wikibase
+  - Wikisets

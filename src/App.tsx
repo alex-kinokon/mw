@@ -1,7 +1,6 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import { ColorModeScript } from "@chakra-ui/react";
-import { RouterProvider } from "react-router-dom";
-import { Helmet, HelmetProvider } from "react-helmet-async";
+import { HelmetProvider } from "react-helmet-async";
 import { Suspense } from "react";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
@@ -30,9 +29,7 @@ const App = () => (
         type="localStorage"
       />
       <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
-        <Suspense fallback={null}>
-          <RouterProvider router={routes} />
-        </Suspense>
+        <Suspense fallback={null}>{routes}</Suspense>
       </PersistQueryClientProvider>
     </ChakraProvider>
   </HelmetProvider>

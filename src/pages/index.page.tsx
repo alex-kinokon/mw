@@ -1,5 +1,5 @@
-import { Navigate } from "react-router-dom";
+import { Redirect } from "wouter";
 
 export default function Index() {
-  return <Navigate to="/wikipedia/en/Main_Page" />;
+  return <Redirect to="/wikipedia/en/page/Main_Page" />;
 }

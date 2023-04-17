@@ -7,12 +7,11 @@ export function usePageStyles(wiki: MediaWiki, page: string) {
   const { data: head } = useQuery({
     queryKey: ["styles", wiki.host, page],
     queryFn: () =>
-      wiki.parse<{ headhtml: { "*": string } }>({
-        format: "json",
+      wiki.action.parse<{ parse: { headhtml: { "*": string } } }>({
         origin: "*",
         redirects: true,
         page,
-        prop: "headhtml",
+        prop: ["headhtml"],
       }),
   });
 

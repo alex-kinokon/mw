@@ -3,7 +3,7 @@ import { Box, Link, Text } from "@chakra-ui/react";
 import { HTML } from "~/components/HTML";
 import type * as wiki from "~/wiki";
 
-export function TOC({ value }: { value: wiki.ParseResponseSection[] }) {
+export function TOC({ value }: { value: wiki.Action.ParseResponseSection[] }) {
   return (
     <Box
       className={css`

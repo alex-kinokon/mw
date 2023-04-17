@@ -1,4 +1,4 @@
-export async function request<T = unknown>(
+export async function request(
   endpoint: string,
   method: "GET" | "POST",
   payload?: Record<string, any>
@@ -39,6 +39,15 @@ export async function request<T = unknown>(
   }
 
   const res = await fetch(url, { method, headers, body });
+  return res;
+}
+
+export async function requestJSON<T = unknown>(
+  endpoint: string,
+  method: "GET" | "POST",
+  payload?: Record<string, any>
+) {
+  const res = await request(endpoint, method, payload);
   if (!res.ok) {
     throw new Error(res.statusText);
   }

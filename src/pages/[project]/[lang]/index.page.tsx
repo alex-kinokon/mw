@@ -1,26 +1,23 @@
-import { useMemo } from "react";
-import { Navigate, useParams } from "react-router-dom";
-import { MediaWiki, getHost } from "~/wiki";
+import { Redirect } from "wouter";
+import { useMediaWiki } from "~/pages/_utils";
 import { useSiteInfo } from "~/wiki/hooks";
 
-export default function ProjectHomePage() {
-  const params = useParams() as unknown as {
-    readonly project: string;
-    readonly lang: string;
-  };
+interface PageParams {
+  readonly project: string;
+  readonly lang: string;
+}
+
+export default function ProjectHomePage({ params }: { params: PageParams }) {
   const { project, lang } = params;
 
-  const wiki = useMemo(() => new MediaWiki(getHost(project, lang)), [project, lang]);
+  const wiki = useMediaWiki(project, lang);
   const { data } = useSiteInfo(wiki);
 
   if (!data) {
     return null;
   }
 
-  return (
-    <Navigate
-      to={"." + new URL(data.query.general.base).pathname.replace(/^\/wiki/, "")}
-      relative="path"
-    />
-  );
+  const page = new URL(data.query.general.base).pathname.replace(/^\/wiki/, "");
+
+  return <Redirect to={`./${page}/page`} />;
 }

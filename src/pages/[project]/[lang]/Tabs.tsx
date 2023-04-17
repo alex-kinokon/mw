@@ -1,7 +1,6 @@
 import { Tab, TabList, Tabs } from "@chakra-ui/react";
-import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 import type { MediaWiki } from "~/wiki";
 import { useSiteInfo } from "~/wiki/hooks";
 
@@ -45,7 +44,7 @@ interface PageTabsProps {
   page: string;
 }
 
-const to = (href: string) => `../${href}`;
+const to = (href: string) => `./${href}`;
 
 function useTabList({
   wiki,
@@ -125,9 +124,7 @@ export function PageTabs(props: PageTabsProps) {
       <TabList>
         {tabList.map(({ text, href }) => (
           <Tab key={href}>
-            <Link to={href} relative="path">
-              {text}
-            </Link>
+            <Link to={href}>{text}</Link>
           </Tab>
         ))}
       </TabList>
