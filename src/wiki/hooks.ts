@@ -4,6 +4,6 @@ import type { MediaWiki } from "./index";
 export function useSiteInfo(wiki: MediaWiki) {
   return useQuery({
     queryKey: ["siteInfo", wiki.host],
-    queryFn: async () => wiki.action.siteInfo(),
+    queryFn: () => wiki.action.siteInfo(),
   });
 }

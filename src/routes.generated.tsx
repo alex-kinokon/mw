@@ -13,8 +13,16 @@ export const data: {
     render: () => import("./pages/index.page"),
   },
   {
+    path: "/:project",
+    render: () => import("./pages/[project]/index.page"),
+  },
+  {
     path: "/:project/:lang",
     render: () => import("./pages/[project]/[lang]/index.page"),
+  },
+  {
+    path: "/:project/:lang/blame/:page",
+    render: () => import("./pages/[project]/[lang]/blame/[page].page"),
   },
   {
     path: "/:project/:lang/page/:page+",
@@ -22,10 +30,6 @@ export const data: {
   },
 ];
 
-export default (
-  <Router>
-    {data.map(({ path, render }) => (
-      <Route key={path} path={path} component={lazy(render)} />
-    ))}
-  </Router>
-);
+export default data.map(({ path, render }) => (
+  <Route key={path} path={path} component={lazy(render)} />
+));

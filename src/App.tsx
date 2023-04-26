@@ -1,3 +1,4 @@
+import { Route, Router } from "wouter";
 import { ChakraProvider } from "@chakra-ui/react";
 import { ColorModeScript } from "@chakra-ui/react";
 import { HelmetProvider } from "react-helmet-async";
@@ -29,7 +30,12 @@ const App = () => (
         type="localStorage"
       />
       <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
-        <Suspense fallback={null}>{routes}</Suspense>
+        <Suspense fallback={null}>
+          <Router>
+            {routes}
+            <Route>404</Route>
+          </Router>
+        </Suspense>
       </PersistQueryClientProvider>
     </ChakraProvider>
   </HelmetProvider>

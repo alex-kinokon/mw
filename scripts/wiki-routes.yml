@@ -185,6 +185,7 @@ routes:
   - UnreadNotificationPages
   - UserContribs
   - UserInfo
+  - UserRights
   - Users
   - VideoInfo
   - Watchlist

@@ -37,13 +37,9 @@ const script = /* jsx */ `
     .join(",")},
   ]
   
-  export default (
-    <Router>
-      {data.map(({ path, render }) => (
-        <Route key={path} path={path} component={lazy(render)} />
-      ))}
-    </Router>
-  )
+  export default data.map(({ path, render }) => (
+    <Route key={path} path={path} component={lazy(render)} />
+  ));
 `;
 
 fs.writeFileSync(

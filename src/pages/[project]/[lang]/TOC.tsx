@@ -2,6 +2,7 @@ import { css } from "@emotion/css";
 import { Box, Link, Text } from "@chakra-ui/react";
 import { HTML } from "~/components/HTML";
 import type * as wiki from "~/wiki";
+import { primer } from "~/styles/primer";
 
 export function TOC({ value }: { value: wiki.Action.ParseResponseSection[] }) {
   return (
@@ -19,7 +20,7 @@ export function TOC({ value }: { value: wiki.Action.ParseResponseSection[] }) {
           paddingLeft={item.toclevel * 4 + 2}
           paddingRight={2}
           _hover={{
-            bg: "cyan.400",
+            bg: primer.canvas.overlay,
             color: "white",
           }}
         >

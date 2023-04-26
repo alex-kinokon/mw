@@ -30,7 +30,7 @@ function _normalizeConfig(config?: SanitizerConfig): SanitizerConfig {
     (config && Object.keys(config).length === 0 && config.constructor === Object) ||
     typeof config == "undefined"
   ) {
-    return getDefaultConfiguration();
+    return getDefaultConfiguration() as any;
   }
 
   const normalizedConfig: SanitizerConfig = {};
@@ -77,7 +77,7 @@ function _normalizeConfig(config?: SanitizerConfig): SanitizerConfig {
 
 /**
  * return default sanitizer API configuration defined by the spec - https://wicg.github.io/sanitizer-api/#default-configuration
- * @returns {object} - default sanitizer API config
+ * @returns default sanitizer API config
  */
 function getDefaultConfiguration() {
   // https://wicg.github.io/sanitizer-api/#ref-for-default-configuration%E2%91%A5

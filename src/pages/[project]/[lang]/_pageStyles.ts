@@ -7,7 +7,7 @@ export function usePageStyles(wiki: MediaWiki, page: string) {
   const { data: head } = useQuery({
     queryKey: ["styles", wiki.host, page],
     queryFn: () =>
-      wiki.action.parse<{ parse: { headhtml: { "*": string } } }>({
+      wiki.action.parse<{ parse: { headhtml: string } }>({
         origin: "*",
         redirects: true,
         page,
@@ -15,7 +15,7 @@ export function usePageStyles(wiki: MediaWiki, page: string) {
       }),
   });
 
-  const html = head?.parse.headhtml["*"];
+  const html = head?.parse.headhtml;
 
   const hrefs = useMemo(() => {
     if (!html) return [];

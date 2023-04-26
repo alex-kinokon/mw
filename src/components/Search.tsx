@@ -13,6 +13,8 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { FaSearch } from "react-icons/fa";
+import { css } from "@emotion/css";
+import { primer } from "~/styles/primer";
 
 interface Props<T extends { key: string }> extends BoxProps {
   /** Input value */
@@ -91,15 +93,18 @@ export const Search = <T extends { key: string }>(props: Props<T>) => {
       </InputGroup>
       {showResults && (
         <Box
-          bgColor="chakra-subtle-bg"
           color="chakra-body-text"
-          maxHeight={resultListMaxHeight}
-          overflowY="auto"
-          borderRadius="0.3em"
-          boxShadow="0 2px 4px 0 rgb(34 36 38 / 12%), 0 2px 10px 0 rgb(34 36 38 / 15%);"
-          position="absolute"
-          zIndex={1}
-          width="100%"
+          className={css`
+            background-color: ${primer.canvas.overlay};
+            border: 1px solid ${primer.header.search.border};
+            box-shadow: 0 2px 4px 0 rgb(34 36 38 / 12%), 0 2px 10px 0 rgb(34 36 38 / 15%);
+            border-radius: 0.3em;
+            max-height: ${resultListMaxHeight};
+            overflow-y: auto;
+            position: absolute;
+            z-index: 1;
+            width: 100%;
+          `}
           sx={{
             "&::-webkit-scrollbar": {
               display: "none",
@@ -112,11 +117,9 @@ export const Search = <T extends { key: string }>(props: Props<T>) => {
                   key={result.key}
                   borderBottom="1px solid rgba(34,36,38,.1)"
                   cursor="pointer"
-                  _hover={
-                    {
-                      // bgColor: "chakra-subtle-bg-hover",
-                    }
-                  }
+                  _hover={{
+                    bgColor: primer.accent.emphasis,
+                  }}
                   onClick={() => onResultSelect(result)}
                 >
                   <Flex alignItems="center">

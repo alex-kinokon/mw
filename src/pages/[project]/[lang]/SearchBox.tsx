@@ -38,8 +38,10 @@ export function SearchBox({ wiki }: SearchBoxProps) {
       resultRenderer={item => (
         <Box>
           <RouterLink to={`./${encodeURIComponent(item.title.replaceAll(" ", "_"))}`}>
-            <Text fontWeight={500}>{item.title}</Text>
-            <Text fontSize="sm">
+            <Text fontWeight={500} color="chakra-body-text">
+              {item.title}
+            </Text>
+            <Text fontSize="sm" color="chakra-body-text">
               <HTML>{item.description || ""}</HTML>
             </Text>
           </RouterLink>

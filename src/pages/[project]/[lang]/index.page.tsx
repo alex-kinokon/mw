@@ -7,17 +7,16 @@ interface PageParams {
   readonly lang: string;
 }
 
-export default function ProjectHomePage({ params }: { params: PageParams }) {
-  const { project, lang } = params;
-
-  const wiki = useMediaWiki(project, lang);
-  const { data } = useSiteInfo(wiki);
-
+export default function ProjectHomePage({
+  params: { project, lang },
+}: {
+  params: PageParams;
+}) {
+  const { data } = useSiteInfo(useMediaWiki(project, lang));
   if (!data) {
     return null;
   }
 
-  const page = new URL(data.query.general.base).pathname.replace(/^\/wiki/, "");
-
-  return <Redirect to={`./${page}/page`} />;
+  const page = new URL(data.general.base).pathname.replace(/^\/wiki\//, "");
+  return <Redirect to={`/${project}/${lang}/page/${page}`} />;
 }

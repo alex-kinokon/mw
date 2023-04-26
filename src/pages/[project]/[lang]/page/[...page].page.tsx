@@ -140,7 +140,13 @@ export default function Page({ params }: { params: PageParams }) {
         <HTML>{value.displaytitle}</HTML>
       </Heading>
       <Content
-        className={cx(className, "mw-parser-output")}
+        className={cx(
+          className,
+          "mw-parser-output",
+          css`
+            scroll-padding-top: 50px;
+          `
+        )}
         onClick={onClick}
         onMouseOver={onHover}
       >

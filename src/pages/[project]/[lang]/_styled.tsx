@@ -28,13 +28,16 @@ export const Content = styled.div`
     margin-bottom: 0.4em;
   }
 
-  ul {
+  ul,
+  ol {
     margin-block-start: 0.3em;
     margin-inline-end: 0;
     margin-block-end: 0;
     margin-inline-start: 1.6em;
     padding: 0;
   }
+
+  // https://en.wikipedia.org/w/load.php?lang=en&modules=skins.vector.styles&only=styles&skin=vector
 
   .mw-editsection {
     display: none;
@@ -98,7 +101,7 @@ export const Content = styled.div`
 
   ol,
   ul {
-    padding-inline-start: 2em;
+    /* padding-inline-start: 2em; */
     margin-bottom: 0.5em;
   }
   table ol,
@@ -153,5 +156,14 @@ export const Content = styled.div`
     img[src*="Loudspeaker.svg"] {
       filter: invert(1);
     }
+  }
+
+  // Adjust anchor position to account for fixed header
+  .mw-headline::before {
+    content: "";
+    display: block;
+    height: 60px;
+    margin-top: -60px;
+    visibility: hidden;
   }
 `;

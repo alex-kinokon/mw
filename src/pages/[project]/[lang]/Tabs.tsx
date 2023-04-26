@@ -52,7 +52,7 @@ function useTabList({
 }: PageTabsProps): { text: string; href: string; active?: boolean }[] {
   const { data: siteInfo } = useSiteInfo(wiki);
 
-  const namespaceInfo = siteInfo?.query.namespaces;
+  const namespaceInfo = siteInfo?.namespaces;
   const nsMap = useMemo(
     () => new Map(Object.values(namespaceInfo ?? {}).map(_ => [_.canonical, _.name])),
     [namespaceInfo]
@@ -77,8 +77,6 @@ function useTabList({
       };
     }
   }, [namespaceInfo, page]);
-
-  console.log({ info });
 
   if (!siteInfo) {
     return [];

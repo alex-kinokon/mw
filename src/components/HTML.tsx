@@ -1,4 +1,8 @@
-import { useLayoutEffect, useRef } from "react";
+import { css } from "@emotion/css";
+import { useLayoutEffect, useRef, useState } from "react";
+import { render } from "react-dom";
+import type { IconType } from "react-icons";
+import { VscChevronDown, VscChevronRight } from "react-icons/vsc";
 
 export function HTML({
   children,
@@ -13,6 +17,7 @@ export function HTML({
 
   useLayoutEffect(() => {
     ref.current!.setHTML(children);
+    postprocess(ref.current!);
     refCallback?.(ref.current!);
   }, [children]);
 
@@ -23,6 +28,101 @@ export function HTML({
   }, [refCallback]);
 
   return <Tag ref={ref as any} />;
+}
+
+function postprocess(element: HTMLElement) {
+  for (const name of ["ambox", "ombox", "tmbox", "cmbox"]) {
+    const selector = `table.${name}:not(.mbox-small)`;
+    for (const node of element.querySelectorAll(selector)) {
+      if (node.parentElement?.matches(`.${name}`)) {
+        return;
+      }
+      const hasPrev = node.previousElementSibling?.matches(selector);
+      const hasNext = node.nextElementSibling?.matches(selector);
+      node.classList.add(
+        hasPrev && hasNext
+          ? "sandwich-middle"
+          : hasPrev
+          ? "sandwich-bottom"
+          : hasNext
+          ? "sandwich-top"
+          : "sandwich-orphan"
+      );
+    }
+  }
+
+  const selector = "div.NavFrame";
+  for (const $it of element.querySelectorAll(selector)) {
+    const hasPrev = $it.previousElementSibling?.matches(selector);
+    const hasNext = $it.nextElementSibling?.matches(selector);
+    $it.classList.add(
+      hasPrev && hasNext
+        ? "sandwich-middle"
+        : hasPrev
+        ? "sandwich-bottom"
+        : hasNext
+        ? "sandwich-top"
+        : "sandwich-orphan"
+    );
+  }
+
+  for (const h2 of element.querySelectorAll(".mw-parser-output h2" as "h2")) {
+    h2.style.display = "flex";
+    h2.style.alignItems = "center";
+    const span = document.createElement("span");
+    span.style.marginRight = "5px";
+    h2.prepend(span);
+
+    const parent = h2.parentElement;
+    const inParent = parent?.matches(".mw-heading2");
+
+    render(
+      <Collapse
+        onToggle={hidden => {
+          for (const sibling of inParent
+            ? nextUntil(parent as HTMLElement, ".mw-heading")
+            : nextUntil(h2 as HTMLElement, "h2")) {
+            sibling.style.display = hidden ? "none" : "";
+          }
+        }}
+      />,
+      span
+    );
+  }
+}
+
+function Collapse({ onToggle }: { onToggle?: (hidden: boolean) => void }) {
+  const [hidden, setHidden] = useState(false);
+  const Element: IconType = hidden ? VscChevronRight : VscChevronDown;
+
+  return (
+    <Element
+      role="button"
+      className={css`
+        border: none;
+        background: none;
+      `}
+      onClick={e => {
+        e.stopPropagation();
+        setHidden(!hidden);
+        onToggle?.(!hidden);
+      }}
+    />
+  );
+}
+
+function nextUntil(element: HTMLElement, selector: string): HTMLElement[] {
+  const siblings: HTMLElement[] = [];
+
+  while ((element = element.nextElementSibling as HTMLElement)) {
+    if (element.matches(selector)) {
+      break;
+    }
+
+    siblings.push(element);
+  }
+
+  return siblings;
 }
 
 if (typeof Sanitizer === "undefined") {

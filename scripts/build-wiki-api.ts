@@ -172,11 +172,13 @@ async function getModuleDefinition(module: string): Promise<ModulePlus[]> {
 
 async function main() {
   const modules = await Promise.all(["main", "main+**"].map(getModuleDefinition));
-  // const names = modules.flat(1).map(x => x.name);
-  // fs.writeFileSync("./wiki-routes.txt", names.join("\n"));
 
   let code = Array.from(
-    getModules(modules.flat(1).filter(m => m.name !== "json" && !m.internal))
+    getModules(
+      modules
+        .flat(1)
+        .filter(m => !["json", "xml", "xmlfm"].includes(m.name) && !m.internal)
+    )
   )
     .filter(Boolean)
     .join("\n");
