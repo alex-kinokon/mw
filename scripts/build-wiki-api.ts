@@ -1,8 +1,7 @@
-#!/usr/bin/env -S node -r esbuild-register
+#!/usr/bin/env bun
 import fs from "fs";
 import { resolve } from "path";
 import { format } from "prettier";
-// @ts-expect-error
 import yaml from "yaml";
 import { NodeHtmlMarkdown } from "node-html-markdown";
 import { camelCase } from "lodash";
@@ -170,30 +169,6 @@ async function getModuleDefinition(module: string): Promise<ModulePlus[]> {
   );
 }
 
-async function main() {
-  const modules = await Promise.all(["main", "main+**"].map(getModuleDefinition));
-
-  let code = Array.from(
-    getModules(
-      modules
-        .flat(1)
-        .filter(m => !["json", "xml", "xmlfm"].includes(m.name) && !m.internal)
-    )
-  )
-    .filter(Boolean)
-    .join("\n");
-  try {
-    code = format(code, {
-      parser: "babel-ts",
-      printWidth: 90,
-    });
-  } catch (e) {
-    console.warn("Failed to format code", e.message);
-  }
-
-  fs.writeFileSync("src/wiki/actions.generated.ts", code);
-}
-
 function* yieldComment(comment: string, close = true) {
   yield "/**";
   for (const line of nhm.translate(comment).split("\n")) {
@@ -320,7 +295,7 @@ function* getModules(modules: ModulePlus[]) {
       }
       yield " */";
       yield '"' + _.prefix + p.name + '"' + (p.required ? "" : "?");
-      yield ": (";
+      yield p.multi ? ": readonly (" : ": (";
       yield getType(p.type);
       yield ")" + (p.multi ? "[]" : "");
       yield "\n";
@@ -329,7 +304,26 @@ function* getModules(modules: ModulePlus[]) {
   }
 }
 
-main();
+const modules = await Promise.all(["main", "main+**"].map(getModuleDefinition));
+
+let code = Array.from(
+  getModules(
+    modules.flat(1).filter(m => !["json", "xml", "xmlfm"].includes(m.name) && !m.internal)
+  )
+)
+  .filter(Boolean)
+  .join("\n");
+try {
+  code = await format(code, {
+    parser: "babel-ts",
+    printWidth: 90,
+  });
+} catch (e) {
+  // eslint-disable-next-line no-console
+  console.warn("Failed to format code", e.message);
+}
+
+fs.writeFileSync("src/wiki/actions.generated.ts", code);
 
 interface ParamInfo {
   helpformat: "html";

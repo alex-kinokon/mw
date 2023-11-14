@@ -1,4 +1,4 @@
-import { Tab, TabList, Tabs } from "@chakra-ui/react";
+import { Tab, Tabs } from "@blueprintjs/core";
 import { useMemo } from "react";
 import { Link } from "wouter";
 import type { MediaWiki } from "~/wiki";
@@ -118,14 +118,12 @@ export function PageTabs(props: PageTabsProps) {
   if (!tabList.length) return null;
 
   return (
-    <Tabs index={tabList.findIndex(x => x.active)}>
-      <TabList>
-        {tabList.map(({ text, href }) => (
-          <Tab key={href}>
-            <Link to={href}>{text}</Link>
-          </Tab>
-        ))}
-      </TabList>
+    <Tabs selectedTabId={tabList.findIndex(x => x.active)}>
+      {tabList.map(({ text, href }, i) => (
+        <Tab id={i} key={href}>
+          <Link to={href}>{text}</Link>
+        </Tab>
+      ))}
     </Tabs>
   );
 }

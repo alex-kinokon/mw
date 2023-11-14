@@ -1,6 +1,8 @@
-import { useCallback, useLayoutEffect, useRef } from "react";
+import { useCallback, useEffect, useInsertionEffect, useRef } from "react";
 
 export { useEvent };
+
+const use = typeof window === "undefined" ? useEffect : useInsertionEffect;
 
 function useEvent<Params extends any[] = [], Return = never>(
   handler: (...params: Params) => Return
@@ -8,7 +10,7 @@ function useEvent<Params extends any[] = [], Return = never>(
   const handlerRef = useRef<(...params: Params) => Return>(handler);
 
   // In a real implementation, this would run before layout effects
-  useLayoutEffect(() => {
+  use(() => {
     handlerRef.current = handler;
   });
 

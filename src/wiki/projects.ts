@@ -4,7 +4,10 @@ interface Project {
 }
 
 export const projects: Project[] = [
-  { name: "Wikipedia", icon: "https://en.wikipedia.org/static/favicon/wikipedia.ico" },
+  {
+    name: "Wikipedia",
+    icon: "https://en.wikipedia.org/static/favicon/wikipedia.ico",
+  },
   {
     name: "Wiktionary",
     icon: "https://en.wiktionary.org/static/favicon/wiktionary/en.ico",

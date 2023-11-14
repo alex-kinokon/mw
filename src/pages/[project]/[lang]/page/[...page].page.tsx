@@ -1,24 +1,20 @@
 import { Helmet } from "react-helmet-async";
 import {
-  Box,
-  Heading,
-  IconButton,
+  Alignment,
+  Button,
+  Classes,
   Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Progress,
-  Skeleton,
-} from "@chakra-ui/react";
-import { BsGlobe } from "react-icons/bs";
+  Navbar,
+  NavbarDivider,
+  NavbarGroup,
+  Popover,
+} from "@blueprintjs/core";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link as RouterLink, useLocation } from "wouter";
 import { css, cx } from "@emotion/css";
 import { HTML } from "~/components/HTML";
 import { useEvent } from "~/hooks/useEvent";
-import Layout from "~/layouts/index";
-import type { Action } from "~/wiki";
-import type { MediaWiki } from "~/wiki";
+import type { Action, MediaWiki } from "~/wiki";
 import { ScrollToTop } from "~/components/ScrollToTop";
 import { applyDarkMode } from "~/dark-mode/bootstrap";
 import { TOC } from "../TOC";
@@ -28,9 +24,8 @@ import { usePageStyles } from "../_pageStyles";
 import { Content } from "../_styled";
 import { PageTabs } from "../Tabs";
 import { useMediaWiki } from "~/pages/_utils";
-
-const MOBILE = { display: { base: "flex", md: "none" } } as const;
-const DESKTOP = { display: { base: "none", md: "flex" }, flex: { md: "1" } } as const;
+import { processWikiHTML } from "../_wikitext";
+import { ProjectPicker } from "~/components/ProjectPicker";
 
 const createPageQuery = (wiki: MediaWiki, page: string) =>
   createQueryOptions({
@@ -82,84 +77,142 @@ export default function Page({ params }: { params: PageParams }) {
     const page = getHref(e.target, "/wiki/");
     if (page) {
       e.preventDefault();
-      queryClient.prefetchQuery(createPageQuery(mediaWiki, page));
+      void queryClient.prefetchQuery(createPageQuery(mediaWiki, page));
     }
   });
 
+  const onLoad = useEvent((node: HTMLElement) => {
+    applyDarkMode(node);
+    processWikiHTML(node);
+  });
+
   if (isLoading) {
-    return (
-      <Layout prefix={<Progress size="xs" isIndeterminate />}>
-        <Skeleton />
-      </Layout>
-    );
+    return <div>Loading</div>;
   }
 
   if (error) {
-    return <Layout>Error: {JSON.stringify(error)}</Layout>;
+    return <div>Error: {JSON.stringify(error)}</div>;
   }
 
   const value = data!;
 
   return (
-    <Layout
-      title={
-        <>
-          <Box {...MOBILE}>{value.title}</Box>
-          <Box {...DESKTOP}>
-            <PageTabs wiki={mediaWiki} page={page} />
-            <SearchBox wiki={mediaWiki} />
-          </Box>
-        </>
-      }
-      titleIcons={
-        <Menu>
-          <MenuButton as={IconButton} icon={<BsGlobe />} size="lg" variant="ghost" />
-          <MenuList
-            className={css`
-              max-height: min(600px, 70vh);
-              overflow-y: auto;
-            `}
-          >
-            {value.langlinks.map(({ lang, url, autonym }) => (
-              <MenuItem key={lang} as={RouterLink} to={getLanguageLink(url)} lang={lang}>
-                {autonym}
-              </MenuItem>
-            ))}
-          </MenuList>
-        </Menu>
-      }
-      sidebarContent={<TOC value={value.sections} />}
-    >
-      <ScrollToTop />
+    <div>
       <Helmet>
         <title>
           {value.title} — {project}
         </title>
+        <link rel="icon" href="https://en.wikipedia.org/static/favicon/wikipedia.ico" />
       </Helmet>
-      <Heading fontSize="3xl" fontWeight={600} mb={3}>
-        <HTML>{value.displaytitle}</HTML>
-      </Heading>
-      <Content
-        className={cx(
-          className,
-          "mw-parser-output",
-          css`
-            scroll-padding-top: 50px;
-          `
-        )}
-        onClick={onClick}
-        onMouseOver={onHover}
-      >
-        <HTML
-          tag="div"
-          refCallback={node => {
-            applyDarkMode(node);
-          }}
+
+      <Navbar>
+        <NavbarGroup
+          align={Alignment.LEFT}
+          className={css`
+            margin-right: 50px;
+          `}
         >
-          {value.text}
-        </HTML>
-      </Content>
-    </Layout>
+          <ProjectPicker />
+          <NavbarDivider />
+          <div
+            className={css`
+              margin-right: 10px;
+              font-weight: 500;
+            `}
+          >
+            {value.title}
+          </div>
+          <PageTabs wiki={mediaWiki} page={page} />
+        </NavbarGroup>
+
+        <NavbarGroup>
+          <SearchBox
+            wiki={mediaWiki}
+            className={css`
+              min-width: 50vw;
+            `}
+          />
+        </NavbarGroup>
+
+        <NavbarGroup align={Alignment.RIGHT}>
+          <Popover
+            content={
+              <Menu
+                className={css`
+                  max-height: 50vh;
+                  overflow-y: auto;
+                `}
+              >
+                {value.langlinks.map(({ lang, url, autonym }) => (
+                  <RouterLink
+                    className={cx(
+                      Classes.MENU_ITEM,
+                      css`
+                        color: var(--color-fg-default) !important;
+                      `
+                    )}
+                    key={lang}
+                    to={getLanguageLink(url)}
+                    lang={lang}
+                  >
+                    <span>{autonym}</span>
+                    <span
+                      className={css`
+                        opacity: 0.8;
+                        margin-left: 0px;
+                      `}
+                    >
+                      ({lang})
+                    </span>
+                  </RouterLink>
+                ))}
+              </Menu>
+            }
+          >
+            <Button icon="globe" />
+          </Popover>
+        </NavbarGroup>
+      </Navbar>
+
+      <ScrollToTop />
+      <div
+        className={css`
+          display: flex;
+        `}
+      >
+        <TOC value={value.sections} />
+        <div
+          className={css`
+            flex: 1;
+          `}
+        >
+          <h2
+            className={css`
+              font-size: 2rem;
+              font-weight: 600;
+              margin-bottom: 1rem;
+            `}
+          >
+            <HTML>{value.displaytitle}</HTML>
+          </h2>
+          <Content
+            className={cx(
+              className,
+              "mw-parser-output",
+              css`
+                scroll-padding-top: 50px;
+              `
+            )}
+            onClick={onClick}
+            onMouseOver={onHover}
+          >
+            <HTML tag="div" refCallback={onLoad}>
+              {value.text}
+            </HTML>
+          </Content>
+        </div>
+      </div>
+    </div>
   );
 }
 

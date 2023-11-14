@@ -37,6 +37,12 @@ export const Content = styled.div`
     padding: 0;
   }
 
+  h2 {
+    font-size: 1.25em;
+    border-bottom: 1px solid var(--color-border-default);
+    margin-bottom: 0.25em;
+  }
+
   // https://en.wikipedia.org/w/load.php?lang=en&modules=skins.vector.styles&only=styles&skin=vector
 
   .mw-editsection {
@@ -75,27 +81,27 @@ export const Content = styled.div`
   h2,
   h3,
   h4 {
-    font-weight: var(--font-weight-bold);
+    font-weight: 600;
     margin-bottom: 4px;
   }
   b,
   strong,
   th {
-    font-weight: var(--font-weight-bold);
+    font-weight: 600;
   }
 
   h2 {
-    font-size: var(--chakra-fontSizes-2xl);
+    font-size: 1.5rem;
     margin-top: 10px;
   }
 
   h3 {
-    font-size: var(--chakra-fontSizes-xl);
+    font-size: 1.25rem;
     margin-top: 10px;
   }
 
   h4 {
-    font-size: var(--chakra-fontSizes-lg);
+    font-size: 1.125rem;
     margin-top: 10px;
   }
 

@@ -1,17 +1,22 @@
 import { ActionAPI as BaseActionAPI } from "./actions.generated";
 
 export class ActionAPI extends BaseActionAPI {
-  async siteInfo() {
+  async siteInfo<K extends "general" | "namespaces" | "namespacealiases">(
+    siProp: readonly K[]
+  ) {
     // https://www.mediawiki.org/w/api.php?action=query&meta=siteinfo&siprop=general|namespaces|namespacealiases
     const { query } = await this.getSiteInfo({
-      siprop: ["general", "namespaces", "namespacealiases"],
+      siprop: siProp,
       origin: "*",
     });
-    return query as {
-      general: SiteInfo.General;
-      namespaces: SiteInfo.Namespace;
-      namespacealiases: SiteInfo.NamespaceAliases[];
-    };
+    return query as Pick<
+      {
+        general: SiteInfo.General;
+        namespaces: SiteInfo.Namespace;
+        namespacealiases: SiteInfo.NamespaceAliases[];
+      },
+      K
+    >;
   }
 }
 

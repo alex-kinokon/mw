@@ -21,12 +21,12 @@ export const data: {
     render: () => import("./pages/[project]/[lang]/index.page"),
   },
   {
-    path: "/:project/:lang/blame/:page",
-    render: () => import("./pages/[project]/[lang]/blame/[page].page"),
-  },
-  {
     path: "/:project/:lang/page/:page+",
     render: () => import("./pages/[project]/[lang]/page/[...page].page"),
+  },
+  {
+    path: "/:project/:lang/blame/:page",
+    render: () => import("./pages/[project]/[lang]/blame/[page].page"),
   },
 ];
 

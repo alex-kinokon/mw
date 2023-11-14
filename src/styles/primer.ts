@@ -1,4 +1,10 @@
 export const primer = {
+  border: {
+    default: "var(--color-border-default)",
+  },
+  fg: {
+    default: "var(--color-fg-default)",
+  },
   accent: {
     emphasis: "var(--color-accent-emphasis)",
   },

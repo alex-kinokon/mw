@@ -5,7 +5,7 @@ import type { MediaWiki } from "~/wiki";
 
 export function usePageStyles(wiki: MediaWiki, page: string) {
   const { data: head } = useQuery({
-    queryKey: ["styles", wiki.host, page],
+    queryKey: ["headhtml", wiki.host, page],
     queryFn: () =>
       wiki.action.parse<{ parse: { headhtml: string } }>({
         origin: "*",

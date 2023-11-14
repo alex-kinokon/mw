@@ -1,5 +1,5 @@
-#!/usr/bin/env -S node -r esbuild-register
-import fs from "fs";
+#!/usr/bin/env bun
+import { promises as fs } from "fs";
 import { extname, resolve } from "path";
 import { format } from "prettier";
 import glob from "fast-glob";
@@ -42,7 +42,7 @@ const script = /* jsx */ `
   ));
 `;
 
-fs.writeFileSync(
+await fs.writeFile(
   resolve(__dirname, "../src/routes.generated.tsx"),
-  format(script, { parser: "babel-ts" })
+  await format(script, { parser: "babel-ts" })
 );
