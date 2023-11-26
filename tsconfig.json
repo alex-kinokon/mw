@@ -21,6 +21,5 @@
     "target": "esnext",
     "useDefineForClassFields": true,
     "useUnknownInCatchVariables": false
-  },
-  "include": ["src", "scripts", "vite.config.ts", "drafts/polyfill.ts"]
+  }
 }

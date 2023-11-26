@@ -1,8 +1,7 @@
 import { css } from "@emotion/css";
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import type { IconType } from "react-icons";
-import { VscChevronDown, VscChevronRight } from "react-icons/vsc";
+import Icon from "@aet/icons/macro";
 
 export function processWikiHTML(element: HTMLElement) {
   for (const name of ["ambox", "ombox", "tmbox", "cmbox"]) {
@@ -17,10 +16,10 @@ export function processWikiHTML(element: HTMLElement) {
         hasPrev && hasNext
           ? "sandwich-middle"
           : hasPrev
-          ? "sandwich-bottom"
-          : hasNext
-          ? "sandwich-top"
-          : "sandwich-orphan"
+            ? "sandwich-bottom"
+            : hasNext
+              ? "sandwich-top"
+              : "sandwich-orphan"
       );
     }
   }
@@ -33,10 +32,10 @@ export function processWikiHTML(element: HTMLElement) {
       hasPrev && hasNext
         ? "sandwich-middle"
         : hasPrev
-        ? "sandwich-bottom"
-        : hasNext
-        ? "sandwich-top"
-        : "sandwich-orphan"
+          ? "sandwich-bottom"
+          : hasNext
+            ? "sandwich-top"
+            : "sandwich-orphan"
     );
   }
 
@@ -78,7 +77,6 @@ type OnClickRef = React.MutableRefObject<((e: MouseEvent) => boolean) | null>;
 
 function Collapse({ onClickRef }: { onClickRef: OnClickRef }) {
   const [hidden, setHidden] = useState(false);
-  const Element: IconType = hidden ? VscChevronRight : VscChevronDown;
 
   useEffect(() => {
     onClickRef.current = e => {
@@ -89,7 +87,8 @@ function Collapse({ onClickRef }: { onClickRef: OnClickRef }) {
   }, [hidden, onClickRef]);
 
   return (
-    <Element
+    <Icon
+      icon={hidden ? "VscChevronRight" : "VscChevronDown"}
       role="button"
       className={css`
         border: none;

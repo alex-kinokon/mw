@@ -1,6 +1,7 @@
 drafts
 .cache
 *.generated.*
+__generated__
 
 # Logs
 logs

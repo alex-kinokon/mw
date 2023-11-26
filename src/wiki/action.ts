@@ -1,24 +1,31 @@
-import { ActionAPI as BaseActionAPI } from "./actions.generated";
+import { getSiteInfo } from "./actions.generated";
+import { requestJSON } from "./utils";
 
-export class ActionAPI extends BaseActionAPI {
-  async siteInfo<K extends "general" | "namespaces" | "namespacealiases">(
-    siProp: readonly K[]
-  ) {
-    // https://www.mediawiki.org/w/api.php?action=query&meta=siteinfo&siprop=general|namespaces|namespacealiases
-    const { query } = await this.getSiteInfo({
-      siprop: siProp,
-      origin: "*",
+type HTTPVerb = "GET" | "POST";
+export type APIRequester = ReturnType<typeof ActionAPI>;
+
+export const ActionAPI =
+  (endpoint: string) =>
+  (method: HTTPVerb, params: any): Promise<any> =>
+    requestJSON("https://" + endpoint + "/w/api.php", method, {
+      format: "json",
+      formatVersion: 2,
+      ...params,
     });
-    return query as Pick<
-      {
-        general: SiteInfo.General;
-        namespaces: SiteInfo.Namespace;
-        namespacealiases: SiteInfo.NamespaceAliases[];
-      },
-      K
-    >;
-  }
-}
+
+export const siteInfo = <K extends "general" | "namespaces" | "namespacealiases">(
+  api: APIRequester,
+  siProp: readonly K[]
+): Promise<
+  Pick<
+    {
+      general: SiteInfo.General;
+      namespaces: SiteInfo.Namespace;
+      namespacealiases: SiteInfo.NamespaceAliases[];
+    },
+    K
+  >
+> => getSiteInfo(api, { siProp, origin: "*" });
 
 export interface ParsePageResponse {
   pageid: number;
@@ -212,7 +219,8 @@ export interface ParseResponseSection {
   toclevel: number;
   level: `${number}`;
   line: string;
-  number: `${number}` | `${number}.${number}` | string;
+  // `${number}.${number}`
+  number: string;
   index: `${number}`;
   fromtitle: string;
   byteoffset: number;
@@ -221,6 +229,10 @@ export interface ParseResponseSection {
   extensionData?: {
     "DiscussionTools-html-summary"?: string;
   };
+}
+
+export interface SectionTree extends ParseResponseSection {
+  children: SectionTree[];
 }
 
 export interface SearchResultItem {

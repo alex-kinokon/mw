@@ -27,6 +27,7 @@ export async function request(
         break;
 
       default:
+        // eslint-disable-next-line rules/restrict-template-expressions
         throw new Error(`Unsupported method: ${method}`);
     }
   }
@@ -55,7 +56,7 @@ export async function requestJSON<T = unknown>(
   const json = await res.json();
 
   if ("error" in json) {
-    const error = new Error((json as any).error!.info) as Error & { code: string };
+    const error = new Error(json.error!.info) as Error & { code: string };
     error.code = json.error.code;
     throw error;
   }

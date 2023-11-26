@@ -1,4 +1,5 @@
-// REST API Revision: https://www.mediawiki.org/w/index.php?title=API:REST_API/Reference&oldid=5832877
+// REST API Revision: https://www.mediawiki.org/w/index.php?title=API:REST_API/Reference&oldid=6201623
+// https://en.wikipedia.org/api/rest_v1/
 import { requestJSON } from "./utils";
 
 type ContentModel = "wikitext" | "css" | "javascript" | "json" | "text";
@@ -32,8 +33,10 @@ export interface SearchResult {
    */
   matched_title?: string;
   /**
-   * Short summary of the page topic based on the corresponding
-   * entry on Wikidata or null if no entry exists
+   * In Wikimedia projects: Short summary of the page topic based
+   * on the corresponding entry on Wikidata or null if no entry exists.
+   * See [[Extension:ShortDescription]] to populate this field in
+   * third-party installations
    */
   description: string | null;
   /**
@@ -431,6 +434,16 @@ export class RestAPI {
    */
   getFile(title: string) {
     return this.get<File>(`file/${en(title)}`);
+  }
+
+  /**
+   * Converts wikitext to HTML.
+   * @param title Wiki page title, used for context
+   * @param payload Transform request body with source
+   * @returns An HTML document.
+   */
+  transformWikiTextToHTML(title: string, payload: { wikitext: string }) {
+    return this.post<string>(`transform/wikitext/to/html/${en(title)}`, payload);
   }
 
   /**

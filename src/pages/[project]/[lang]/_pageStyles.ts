@@ -2,12 +2,13 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { css } from "@emotion/css";
 import type { MediaWiki } from "~/wiki";
+import { parse } from "~/wiki/actions.generated";
 
 export function usePageStyles(wiki: MediaWiki, page: string) {
   const { data: head } = useQuery({
     queryKey: ["headhtml", wiki.host, page],
     queryFn: () =>
-      wiki.action.parse<{ parse: { headhtml: string } }>({
+      parse<{ headhtml: string }>(wiki.action, {
         origin: "*",
         redirects: true,
         page,
@@ -15,9 +16,9 @@ export function usePageStyles(wiki: MediaWiki, page: string) {
       }),
   });
 
-  const html = head?.parse.headhtml;
+  const html = head?.headhtml;
 
-  const hrefs = useMemo(() => {
+  const hrefs = useMemo((): string[] => {
     if (!html) return [];
 
     const dom = new DOMParser().parseFromString(html, "text/html");

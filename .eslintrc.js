@@ -2,5 +2,5 @@
 const { extendConfig } = require("@aet/eslint-rules");
 
 module.exports = extendConfig({
-  plugins: ["react", "import"],
+  plugins: ["react", "unicorn"],
 });

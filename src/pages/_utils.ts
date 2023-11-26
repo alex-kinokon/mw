@@ -9,7 +9,6 @@ export function useMediaWiki(project: string, lang: string) {
         return new MediaWiki(`${lang}.wikipedia.org`);
       case "wiktionary":
         return new MediaWiki(`${lang}.wiktionary.org`);
-
       default:
         throw new Error(`Unknown project: ${project}`);
     }

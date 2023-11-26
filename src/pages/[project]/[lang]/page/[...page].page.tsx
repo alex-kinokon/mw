@@ -26,18 +26,17 @@ import { PageTabs } from "../Tabs";
 import { useMediaWiki } from "~/pages/_utils";
 import { processWikiHTML } from "../_wikitext";
 import { ProjectPicker } from "~/components/ProjectPicker";
+import { parse } from "~/wiki/actions.generated";
 
 const createPageQuery = (wiki: MediaWiki, page: string) =>
   createQueryOptions({
     queryKey: ["page", wiki.host, page] as const,
-    queryFn: async () => {
-      const { parse } = await wiki.action.parse<{ parse: Action.ParsePageResponse }>({
+    queryFn: () =>
+      parse<Action.ParsePageResponse>(wiki.action, {
         origin: "*",
         redirects: true,
         page: decodeURIComponent(page),
-      });
-      return parse;
-    },
+      }),
   });
 
 function getHref(a: EventTarget, prefix: string) {
