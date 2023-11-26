@@ -122,7 +122,7 @@ export function* getModules(_: ModulePlus) {
       params: ${name}Params
     ): Promise<${hasTypeDefinition ? responseName : "R"}> {
       const json = await api("${verb}", { ${props}, ...params });
-      return json${paths.length > 1 ? paths.map(propName).join("") : propName(_.name)};
+      return json${paths.length > 1 ? propName(paths[0]) : propName(_.name)};
     }
   `;
 }

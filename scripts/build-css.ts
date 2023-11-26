@@ -1,6 +1,6 @@
-#!/usr/bin/env -S node -r esbuild-register
-import fs from "fs/promises";
-import { resolve } from "path";
+#!/usr/bin/env bun
+import fs from "node:fs/promises";
+import { resolve } from "node:path";
 import * as sass from "sass";
 import type { Element } from "stylis";
 import { compile, serialize, stringify } from "stylis";
@@ -16,19 +16,15 @@ function filter(elements: Element[]): Element[] {
       case "decl":
         return e;
       case "rule":
-        console.log(e.value);
         // return e;
-        if (e.value.includes(".mw-parser-output") || whitelist.has(e.value)) {
-          return e;
-        } else {
-          return [];
-        }
+        return e.value.includes(".mw-parser-output") || whitelist.has(e.value) ? e : [];
       case "@media":
         return {
           ...e,
           children: filter(e.children as Element[]),
         };
       case "@import":
+      case "@charset":
       case "comm":
         return [];
       default:
@@ -37,32 +33,29 @@ function filter(elements: Element[]): Element[] {
   });
 }
 
-async function main() {
-  function extractParserOutputCSS(cssString: string): string {
-    return serialize(filter(compile(cssString)), stringify);
-  }
-
-  const path = resolve(__dirname, "../../mediawiki/src/global.scss");
-
-  const sassResult = await sass.compileAsync(path, {
-    sourceMap: false,
-    functions: {
-      "encode-uri-component($text)"(args) {
-        const { text } = args[0].assertString();
-        return new sass.SassString(encodeURIComponent(text));
-      },
-      "color-mode()"() {
-        return new sass.SassString("data-theme");
-      },
-      "let($name)"(args) {
-        const { text } = args[0].assertString();
-        return new sass.SassString(`--mw-${text}`, { quotes: false });
-      },
-    },
-  });
-
-  const output = extractParserOutputCSS(sassResult.css);
-  await fs.writeFile(resolve(__dirname, "../src/assets/wiki.css"), output);
+function extractParserOutputCSS(cssString: string): string {
+  return serialize(filter(compile(cssString)), stringify);
 }
 
-main();
+const path = resolve(__dirname, "../../mediawiki/stylesheet/index.scss");
+console.log(path);
+
+const sassResult = await sass.compileAsync(path, {
+  sourceMap: false,
+  functions: {
+    "encode-uri-component($text)"(args) {
+      const { text } = args[0].assertString();
+      return new sass.SassString(encodeURIComponent(text));
+    },
+    "color-mode()"() {
+      return new sass.SassString("data-theme");
+    },
+    "let($name)"(args) {
+      const { text } = args[0].assertString();
+      return new sass.SassString(`--mw-${text}`, { quotes: false });
+    },
+  },
+});
+
+const output = extractParserOutputCSS(sassResult.css);
+await fs.writeFile(resolve(__dirname, "../src/assets/wiki.css"), output);

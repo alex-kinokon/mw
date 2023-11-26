@@ -2,15 +2,13 @@ import { Helmet } from "react-helmet-async";
 import {
   Alignment,
   Button,
-  Classes,
-  Menu,
   Navbar,
   NavbarDivider,
   NavbarGroup,
   Popover,
 } from "@blueprintjs/core";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link as RouterLink, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { css, cx } from "@emotion/css";
 import { HTML } from "~/components/HTML";
 import { useEvent } from "~/hooks/useEvent";
@@ -27,6 +25,7 @@ import { useMediaWiki } from "~/pages/_utils";
 import { processWikiHTML } from "../_wikitext";
 import { ProjectPicker } from "~/components/ProjectPicker";
 import { parse } from "~/wiki/actions.generated";
+import { InterwikiLanguage } from "../InterwikiLanguage";
 
 const createPageQuery = (wiki: MediaWiki, page: string) =>
   createQueryOptions({
@@ -50,15 +49,14 @@ function getHref(a: EventTarget, prefix: string) {
 
 interface PageParams {
   readonly project: string;
-  readonly lang: string;
   readonly page: string;
 }
 
 export default function Page({ params }: { params: PageParams }) {
   const [, navigate] = useLocation();
-  const { project, lang, page } = params;
+  const { project, page } = params;
 
-  const mediaWiki = useMediaWiki(project, lang);
+  const mediaWiki = useMediaWiki(project);
   const queryClient = useQueryClient();
   const { isLoading, data, error } = useQuery(createPageQuery(mediaWiki, page));
 
@@ -68,7 +66,7 @@ export default function Page({ params }: { params: PageParams }) {
     const nextPage = getHref(e.target, "/wiki/");
     if (nextPage) {
       e.preventDefault();
-      navigate(`./${nextPage}`);
+      navigate(`/${project}/view/${nextPage}`);
     }
   });
 
@@ -96,7 +94,19 @@ export default function Page({ params }: { params: PageParams }) {
   const value = data!;
 
   return (
-    <div>
+    <div
+      className={css`
+        display: grid;
+        grid-template-areas:
+          "header header"
+          "sidebar content"
+          "footer footer";
+        grid-template-rows: 0 1fr;
+        grid-template-columns: 300px 1fr;
+        min-height: 100vh;
+        --header-height: 50px;
+      `}
+    >
       <Helmet>
         <title>
           {value.title} — {project}
@@ -104,7 +114,14 @@ export default function Page({ params }: { params: PageParams }) {
         <link rel="icon" href="https://en.wikipedia.org/static/favicon/wikipedia.ico" />
       </Helmet>
 
-      <Navbar>
+      <Navbar
+        className={css`
+          grid-area: header;
+          position: sticky;
+          top: 0;
+          z-index: 1;
+        `}
+      >
         <NavbarGroup
           align={Alignment.LEFT}
           className={css`
@@ -134,57 +151,40 @@ export default function Page({ params }: { params: PageParams }) {
         </NavbarGroup>
 
         <NavbarGroup align={Alignment.RIGHT}>
-          <Popover
-            content={
-              <Menu
-                className={css`
-                  max-height: 50vh;
-                  overflow-y: auto;
-                `}
-              >
-                {value.langlinks.map(({ lang, url, autonym }) => (
-                  <RouterLink
-                    className={cx(
-                      Classes.MENU_ITEM,
-                      css`
-                        color: var(--color-fg-default) !important;
-                      `
-                    )}
-                    key={lang}
-                    to={getLanguageLink(url)}
-                    lang={lang}
-                  >
-                    <span>{autonym}</span>
-                    <span
-                      className={css`
-                        opacity: 0.8;
-                        margin-left: 0px;
-                      `}
-                    >
-                      ({lang})
-                    </span>
-                  </RouterLink>
-                ))}
-              </Menu>
-            }
-          >
+          <Popover content={<InterwikiLanguage links={value.langlinks} />}>
             <Button icon="globe" />
           </Popover>
         </NavbarGroup>
       </Navbar>
 
       <ScrollToTop />
+
       <div
         className={css`
           display: flex;
+          flex-direction: column;
+          grid-area: sidebar;
+          position: sticky;
+          top: 0;
         `}
       >
-        <TOC value={value.sections} />
-        <div
-          className={css`
-            flex: 1;
-          `}
-        >
+        <div className={CONTENT}>
+          <TOC value={value.sections} />
+        </div>
+        <div className={SPACER} />
+      </div>
+
+      <div
+        className={css`
+          grid-area: content;
+          display: flex;
+          padding-top: var(--header-height);
+          padding-right: 100px;
+          padding-left: 20px;
+        `}
+      >
+        <div className={SPACER} />
+        <div className={CONTENT}>
           <h2
             className={css`
               font-size: 2rem;
@@ -199,7 +199,10 @@ export default function Page({ params }: { params: PageParams }) {
               className,
               "mw-parser-output",
               css`
-                scroll-padding-top: 50px;
+                [id] {
+                  padding-top: var(--header-height);
+                  margin-top: calc(var(--header-height) * -1);
+                }
               `
             )}
             onClick={onClick}
@@ -211,17 +214,24 @@ export default function Page({ params }: { params: PageParams }) {
           </Content>
         </div>
       </div>
+
+      <footer
+        className={css`
+          grid-area: footer;
+        `}
+      >
+        Footer
+      </footer>
     </div>
   );
 }
 
-function getLanguageLink(link: string) {
-  const url = new URL(link);
-  const { hostname, pathname } = url;
-  if (hostname.endsWith("wikipedia.org") || hostname.endsWith("wiktionary.org")) {
-    const [lang, host] = hostname.split(".");
-    return `/${host}/${lang}/${pathname.replace(/^\/wiki\//, "")}`;
-  }
-
-  return link;
-}
+const SPACER = css`
+  flex-grow: 1;
+`;
+const CONTENT = css`
+  position: sticky;
+  top: var(--header-height);
+  height: calc(100vh - var(--header-height));
+  overflow: scroll;
+`;

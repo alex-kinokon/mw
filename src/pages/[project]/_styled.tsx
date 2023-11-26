@@ -1,10 +1,9 @@
 import styled from "@emotion/styled";
 
 export const Content = styled.div`
-  max-width: 100%;
   overflow: scroll;
   position: relative;
-  font-size: 17px;
+  font-size: 16px;
 
   table {
     border-collapse: separate;

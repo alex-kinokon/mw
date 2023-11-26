@@ -1,26 +1,19 @@
 import Icon from "@aet/icons/macro";
-import { css } from "@emotion/css";
+import { css, cx } from "@emotion/css";
 import { useMemo, useState } from "react";
 import { HTML } from "~/components/HTML";
 import type * as wiki from "~/wiki";
 
 function collapseTOCLevelIntoATree(sections: wiki.Action.ParseResponseSection[]) {
   const tree: wiki.Action.SectionTree[] = [];
-  const stack: wiki.Action.SectionTree[] = [];
-  let lastLevel = 0;
   for (const section of sections) {
-    const level = section.toclevel;
-    const node = { ...section, children: [] };
-    if (level > lastLevel) {
-      stack.push(tree.at(-1)!);
-    } else if (level < lastLevel) {
-      for (let i = 0; i < lastLevel - level; i++) {
-        stack.pop();
-      }
-    }
-    stack.at(-1)?.children.push(node);
-    tree.push(node);
-    lastLevel = level;
+    const path = section.number.split(".").map(_ => parseInt(_) - 1);
+    const index = path.pop()!;
+    const parent = path.reduce((accum, index) => accum.children[index], {
+      children: tree,
+    });
+
+    parent.children[index] = { ...section, children: [] };
   }
   return tree;
 }
@@ -39,17 +32,20 @@ function TOCEntry({ item }: { item: wiki.Action.SectionTree }) {
         padding-right: 2rem;
       `}
     >
-      <div
+      <button
         className={css`
+          background: transparent;
+          border: none;
           display: grid;
+          text-align: left;
           grid-template-columns: 1em 1fr;
-          gap: 0.3em;
+          gap: 0.5em;
         `}
+        onClick={() => setShow(!show)}
       >
         {hasChildren ? (
           <Icon
             icon={show ? "VscChevronDown" : "VscChevronRight"}
-            onClick={() => setShow(!show)}
             className={css`
               cursor: pointer;
               font-size: 1.2em;
@@ -62,7 +58,7 @@ function TOCEntry({ item }: { item: wiki.Action.SectionTree }) {
         <a href={`#${item.anchor}`}>
           <HTML>{item.line}</HTML>
         </a>
-      </div>
+      </button>
 
       {hasChildren && show && (
         <ul
@@ -70,7 +66,7 @@ function TOCEntry({ item }: { item: wiki.Action.SectionTree }) {
             list-style: none;
             padding: 0;
             margin: 0;
-            margin-left: 10px;
+            margin-left: 5px;
           `}
         >
           {item.children.map(item => (
@@ -82,17 +78,25 @@ function TOCEntry({ item }: { item: wiki.Action.SectionTree }) {
   );
 }
 
-export function TOC({ value }: { value: wiki.Action.ParseResponseSection[] }) {
+export function TOC({
+  className,
+  value,
+}: {
+  className?: string;
+  value: wiki.Action.ParseResponseSection[];
+}) {
   const tree = useMemo(() => collapseTOCLevelIntoATree(value), [value]);
 
   return (
     <div
-      className={css`
-        overflow: scroll;
-        max-height: 100%;
-        width: 300px;
-        min-width: 300px;
-      `}
+      className={cx(
+        className,
+        css`
+          overflow: scroll;
+          max-height: 100%;
+          padding: 10px 0;
+        `
+      )}
     >
       <ul
         className={css`
