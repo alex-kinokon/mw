@@ -1,9 +1,11 @@
+import $ from "jquery";
 import { css } from "@emotion/css";
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import Icon from "@aet/icons/macro";
+import { makeCollapsible } from "./mediawiki/jquery.makeCollapsible";
 
-export function processWikiHTML(element: HTMLElement) {
+function combineMBoxes(element: HTMLElement) {
   for (const name of ["ambox", "ombox", "tmbox", "cmbox"]) {
     const selector = `table.${name}:not(.mbox-small)`;
     for (const node of element.querySelectorAll(selector)) {
@@ -23,6 +25,33 @@ export function processWikiHTML(element: HTMLElement) {
       );
     }
   }
+}
+
+export function processWikiHTML(element: HTMLElement): (() => void) | undefined {
+  combineMBoxes(element);
+  const tocItems = document.getElementsByClassName("toc");
+
+  const obs = new IntersectionObserver(
+    entries => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          const { id } = entry.target;
+          if (!id) return;
+          for (const a of tocItems) {
+            (a as HTMLElement).classList.toggle(
+              "active",
+              a.getAttribute("href") === `#${id}`
+            );
+          }
+        }
+      }
+    },
+    {
+      root: null,
+      rootMargin: "-10px",
+      threshold: 0,
+    }
+  );
 
   const selector = "div.NavFrame";
   for (const frame of element.querySelectorAll(selector)) {
@@ -52,13 +81,12 @@ export function processWikiHTML(element: HTMLElement) {
     span.className = css`
       margin-right: 5px;
     `;
-    h2.prepend(span);
 
     const parent = h2.parentElement;
     const section = document.createElement("section");
     section.append(
       ...(parent?.matches(".mw-heading2")
-        ? nextUntil(parent as HTMLElement, ".mw-heading")
+        ? nextUntil(parent, ".mw-heading")
         : nextUntil(h2 as HTMLElement, "h2"))
     );
     h2.after(section);
@@ -71,6 +99,14 @@ export function processWikiHTML(element: HTMLElement) {
 
     createRoot(span).render(<Collapse onClickRef={onClickRef} />);
   }
+
+  for (const anchors of element.querySelectorAll(".mw-parser-output .mw-headline")) {
+    obs.observe(anchors);
+  }
+
+  $(element).find(".mw-collapsible").each(makeCollapsible);
+
+  return () => obs.disconnect();
 }
 
 type OnClickRef = React.MutableRefObject<((e: MouseEvent) => boolean) | null>;

@@ -55,7 +55,17 @@ function TOCEntry({ item }: { item: wiki.Action.SectionTree }) {
         ) : (
           <svg height="1em" width="1em" />
         )}
-        <a href={`#${item.anchor}`}>
+        <a
+          className={cx(
+            "toc",
+            css`
+              &.active {
+                font-weight: bold;
+              }
+            `
+          )}
+          href={`#${item.anchor}`}
+        >
           <HTML>{item.line}</HTML>
         </a>
       </button>

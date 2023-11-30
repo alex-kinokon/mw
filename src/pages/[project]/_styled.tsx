@@ -171,4 +171,22 @@ export const Content = styled.div`
     margin-top: -60px;
     visibility: hidden;
   }
+
+  // Figures
+  figure {
+    float: left;
+  }
+  figure.mw-halign-right,
+  figure.mw-halign-right {
+    margin: 0.5em 0 1.3em 1.4em;
+    clear: right;
+    float: right;
+    border-collapse: initial;
+    border-radius: 5px 5px 0 0;
+    border: 1px solid #c8ccd1;
+    border-bottom: 0;
+    background-color: #f8f9fa;
+    display: table;
+    text-align: center;
+  }
 `;

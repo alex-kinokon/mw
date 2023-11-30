@@ -1,10 +1,12 @@
 #!/usr/bin/env -S node -r esbuild-register
-import { ActionAPI } from "./src/wiki/api";
+import { buildSync } from "esbuild";
 
-const api = new ActionAPI("https://en.wikipedia.org/w/api.php");
-api
-  .siteinfo({
-    prop: ["general", "namespaces", "namespacealiases"],
-    origin: "*",
-  })
-  .then(console.log);
+buildSync({
+  entryPoints: ["./html-to-react/index.js"],
+  outfile: "./src/utils/html-to-react.ts",
+  bundle: true,
+  format: "esm",
+  packages: "external",
+  platform: "node",
+  target: "esnext",
+});

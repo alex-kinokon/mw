@@ -1,6 +1,6 @@
 import { Classes, Menu } from "@blueprintjs/core";
-import { Link as RouterLink } from "wouter";
 import { css, cx } from "@emotion/css";
+import { Link as RouterLink } from "~/utils/router";
 import type { ParsePageResponse } from "~/wiki/action";
 
 export function InterwikiLanguage({ links }: { links: ParsePageResponse["langlinks"] }) {
@@ -20,7 +20,7 @@ export function InterwikiLanguage({ links }: { links: ParsePageResponse["langlin
             `
           )}
           key={lang}
-          to={getLanguageLink(url)}
+          href={getLanguageLink(url)}
           lang={lang}
         >
           <span>{autonym}</span>

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useLocation } from "wouter";
+import { useLocation } from "~/utils/router";
 
 export function ScrollToTop() {
   const [location] = useLocation();

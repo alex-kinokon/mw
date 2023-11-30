@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link as RouterLink } from "wouter";
 import { useState } from "react";
 import { Suggest } from "@blueprintjs/select";
 import { css } from "@emotion/css";
 import { MenuItem } from "@blueprintjs/core";
+import { Link as RouterLink } from "~/utils/router";
 import { HTML } from "~/components/HTML";
 import type { MediaWiki } from "~/wiki";
 import { useDebouncedValue } from "~/hooks/useDebouncedValue";
@@ -11,9 +11,10 @@ import { useDebouncedValue } from "~/hooks/useDebouncedValue";
 interface SearchBoxProps {
   className?: string;
   wiki: MediaWiki;
+  active?: string;
 }
 
-export function SearchBox({ className, wiki }: SearchBoxProps) {
+export function SearchBox({ active, className, wiki }: SearchBoxProps) {
   const [value, setValue] = useState("");
   const debouncedValue = useDebouncedValue(value, 500);
 
@@ -38,7 +39,7 @@ export function SearchBox({ className, wiki }: SearchBoxProps) {
           active={props.modifiers.active}
           text={
             <RouterLink
-              to={`./${encodeURIComponent(item.title.replaceAll(" ", "_"))}`}
+              href={`./${encodeURIComponent(item.title.replaceAll(" ", "_"))}`}
               className={css`
                 display: block;
               `}
@@ -61,6 +62,9 @@ export function SearchBox({ className, wiki }: SearchBoxProps) {
       onQueryChange={setValue}
       onItemSelect={() => {}}
       inputValueRenderer={item => item.title}
+      inputProps={{
+        placeholder: active,
+      }}
       noResults={
         <MenuItem disabled={true} text="No results." roleStructure="listoption" />
       }

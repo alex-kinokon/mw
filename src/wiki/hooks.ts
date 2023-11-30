@@ -5,6 +5,6 @@ import { siteInfo } from "./action";
 export function useSiteInfo(wiki: MediaWiki) {
   return useQuery({
     queryKey: ["siteInfo", wiki.host],
-    queryFn: () => siteInfo(wiki.action, ["general"]),
+    queryFn: () => siteInfo(wiki.action, ["general", "namespaces"]),
   });
 }

@@ -1,18 +1,18 @@
-// html-to-react/lib/parser.js
-import { Parser as HtmlParser } from "htmlparser2";
-import { DomHandler } from "domhandler";
-
-// html-to-react/lib/should-process-node-definitions.js
-function shouldProcessEveryNode(node) {
-  return true;
-}
-
-// html-to-react/lib/utils.js
+import { Parser as HtmlParser, type ParserOptions } from "htmlparser2";
+import {
+  type ChildNode,
+  type DataNode,
+  DomHandler,
+  type Element,
+  isComment,
+  isDirective,
+  isText,
+} from "domhandler";
 import { camelCase } from "lodash";
 import { createElement as c } from "react";
 
 // html-to-react/lib/camel-case-attribute-names.js
-var HTML_ATTRIBUTES = [
+const HTML_ATTRIBUTES = [
   "accept",
   "acceptCharset",
   "accessKey",
@@ -138,7 +138,7 @@ var HTML_ATTRIBUTES = [
   "wrap",
   "onClick",
 ];
-var NON_STANDARD_ATTRIBUTES = [
+const NON_STANDARD_ATTRIBUTES = [
   "autoCapitalize",
   "autoCorrect",
   "color",
@@ -152,7 +152,7 @@ var NON_STANDARD_ATTRIBUTES = [
   "results",
   "autoSave",
 ];
-var SVG_ATTRIBUTES = [
+const SVG_ATTRIBUTES = [
   "accentHeight",
   "accumulate",
   "additive",
@@ -393,36 +393,31 @@ var SVG_ATTRIBUTES = [
   "z",
   "zoomAndPan",
 ];
-var camelCaseMap = HTML_ATTRIBUTES.concat(NON_STANDARD_ATTRIBUTES)
-  .concat(SVG_ATTRIBUTES)
-  .reduce((soFar, attr) => {
-    const lower = attr.toLowerCase();
-    if (lower !== attr) {
-      soFar[lower] = attr;
-    }
-    return soFar;
-  }, {});
+const camelCaseMap = new Map<string, string>();
+
+for (const attr of [...HTML_ATTRIBUTES, ...NON_STANDARD_ATTRIBUTES, ...SVG_ATTRIBUTES]) {
+  const lower = attr.toLowerCase();
+  if (lower !== attr) {
+    camelCaseMap.set(lower, attr);
+  }
+}
 
 // html-to-react/lib/utils.js
 function createStyleJsonFromString(styleString = "") {
   const styles = styleString.split(/;(?!base64)/);
-  let singleStyle;
-  let key;
-  let value;
-  const jsonStyles = {};
+  const jsonStyles = {} as Record<string, string>;
   for (const style of styles) {
-    singleStyle = style.split(":");
+    const singleStyle = style.split(":");
     if (singleStyle.length > 2) {
       singleStyle[1] = singleStyle.slice(1).join(":");
     }
-    key = singleStyle[0];
-    value = singleStyle[1];
+    let [key, value] = singleStyle;
     if (typeof value === "string") {
       value = value.trim();
     }
-    if (key != null && value != null && key.length > 0 && value.length > 0) {
+    if (key?.length && value?.length) {
       key = key.trim();
-      if (key.indexOf("--") !== 0) {
+      if (!key.startsWith("--")) {
         key = camelCase(key);
       }
       jsonStyles[key] = value;
@@ -430,7 +425,8 @@ function createStyleJsonFromString(styleString = "") {
   }
   return jsonStyles;
 }
-var booleanAttrs = /* @__PURE__ */ new Set([
+
+const booleanAttrs = /* @__PURE__ */ new Set([
   "allowFullScreen",
   "allowpaymentrequest",
   "async",
@@ -457,39 +453,46 @@ var booleanAttrs = /* @__PURE__ */ new Set([
   "selected",
   "truespeed",
 ]);
-function createElement(node, index, data, children) {
-  let elementProps = {
+
+function createElement(
+  node: Element,
+  index: number,
+  data?: string,
+  children?: React.ReactNode[]
+): React.ReactElement {
+  let elementProps: Record<string, unknown> = {
     key: index,
   };
   const isCustomElementNode = node.name.includes("-");
   if (node.attribs) {
     elementProps = Object.entries(node.attribs).reduce((result, [key, value]) => {
+      let v = value as any;
       if (!isCustomElementNode) {
-        key = camelCaseMap[key.replace(/[:-]/, "")] || key;
+        key = camelCaseMap.get(key.replace(/[:-]/, "")) || key;
         if (key === "style") {
-          value = createStyleJsonFromString(value);
+          v = createStyleJsonFromString(value);
         } else if (key === "class") {
           key = "className";
         } else if (key === "for") {
           key = "htmlFor";
         } else if (key.startsWith("on")) {
-          value = Function(value);
+          // v = Function(value);
         }
         if (booleanAttrs.has(key) && (value || "") === "") {
-          value = key;
+          v = key;
         }
       }
-      result[key] = value;
+      result[key] = v;
       return result;
     }, elementProps);
   }
   children = children || [];
-  const allChildren = data != null ? [data].concat(children) : children;
+  const allChildren = data != null ? [data, ...children] : children;
   return c(node.name, elementProps, ...allChildren);
 }
 
 // html-to-react/lib/process-node-definitions.js
-var voidElementTags = [
+const voidElementTags = new Set([
   "area",
   "base",
   "br",
@@ -507,110 +510,92 @@ var voidElementTags = [
   "wbr",
   "menuitem",
   "textarea",
-];
-function processDefaultNode(node, children, index) {
-  if (node.type === "text") {
-    return node.data;
-  } else if (node.type === "comment") {
-    return false;
-  }
-  return voidElementTags.includes(node.name)
-    ? createElement(node, index)
-    : createElement(node, index, node.data, children);
-}
+]);
 
 // html-to-react/lib/processing-instructions.js
-var defaultProcessingInstructions = [
-  {
-    shouldProcessNode: shouldProcessEveryNode,
-    processNode: processDefaultNode,
+const defaultMiddleware: Middleware = {
+  filter: () => true,
+  onNode(node: ChildNode, children, index) {
+    if (isText(node)) {
+      return node.data;
+    } else if (isComment(node)) {
+      return false;
+    }
+    return voidElementTags.has((node as Element).name)
+      ? createElement(node as Element, index)
+      : createElement(node as Element, index, (node as DataNode).data, children);
   },
-];
-
-// html-to-react/lib/is-valid-node-definitions.js
-function alwaysValid() {
-  return true;
-}
+};
 
 // html-to-react/lib/parser.js
 function traverseDom(
-  node,
-  isValidNode,
-  processingInstructions,
-  preprocessingInstructions,
-  index
-) {
-  if (isValidNode(node)) {
-    for (const instruction of preprocessingInstructions || []) {
-      if (instruction.shouldPreprocessNode(node)) {
-        instruction.preprocessNode(node, index);
-      }
-    }
-    const processingInstruction = (processingInstructions || []).find(instruction =>
-      instruction.shouldProcessNode(node)
-    );
-    if (processingInstruction != null) {
-      const children = (node.children || [])
-        .map((child, i) =>
-          traverseDom(
-            child,
-            isValidNode,
-            processingInstructions,
-            preprocessingInstructions,
-            i
-          )
-        )
-        .filter(child => child != null && child !== false);
-      return processingInstruction.replaceChildren
-        ? createElement(node, index, node.data, [
-            processingInstruction.processNode(node, children, index),
-          ])
-        : processingInstruction.processNode(node, children, index);
-    } else {
-      return false;
-    }
-  } else {
+  node: ChildNode,
+  isValidNode: (node: ChildNode) => boolean,
+  middleware: Middleware,
+  preprocess: PreprocessingMiddleware | undefined,
+  index: number
+): React.ReactNode {
+  if (!isValidNode(node)) {
     return false;
   }
-}
-function Html2ReactParser(options) {
-  function parseHtmlToTree(html) {
-    options = options || {};
-    options.decodeEntities = true;
-    const handler = new DomHandler();
-    const parser = new HtmlParser(handler, options);
-    parser.parseComplete(html);
-    return handler.dom.filter(element => element.type !== "directive");
+
+  preprocess?.(node, index);
+
+  if (!middleware.filter(node)) {
+    return false;
   }
-  function parseWithInstructions(
-    html,
-    isValidNode,
-    processingInstructions,
-    preprocessingInstructions
-  ) {
-    const domTree = parseHtmlToTree(html);
+
+  const children = Array.from((node as Element).children || [])
+    .map((child, i) => traverseDom(child, isValidNode, middleware, preprocess, i))
+    .filter((child): child is React.ReactElement => child != null && child !== false);
+
+  const processed = middleware.onNode(node, children, index);
+
+  return middleware.replaceChildren
+    ? createElement(node as Element, index, (node as DataNode).data, [processed])
+    : processed!;
+}
+
+interface Middleware {
+  replaceChildren?: boolean;
+  filter(node: ChildNode): boolean;
+  onNode(node: ChildNode, children: React.ReactElement[], index: number): React.ReactNode;
+}
+type PreprocessingMiddleware = (node: ChildNode, index: number) => void;
+
+export class Html2ReactParser {
+  constructor(readonly options: ParserOptions = {}) {}
+
+  private parseHtmlToTree(html: string): ChildNode[] {
+    const handler = new DomHandler();
+    const parser = new HtmlParser(handler, {
+      ...this.options,
+      decodeEntities: true,
+    });
+    parser.parseComplete(html);
+    return handler.dom.filter(element => !isDirective(element));
+  }
+
+  parseWithInstructions(
+    html: string,
+    isValidNode: (node: ChildNode) => boolean,
+    processingInstruction: Middleware,
+    preprocessingInstruction?: PreprocessingMiddleware
+  ): React.ReactNode {
+    const domTree = this.parseHtmlToTree(html);
     const list = domTree.map((domTreeItem, index) =>
       traverseDom(
         domTreeItem,
         isValidNode,
-        processingInstructions,
-        preprocessingInstructions,
+        processingInstruction,
+        preprocessingInstruction,
         index
       )
     );
     return list.length <= 1 ? list[0] : list;
   }
-  function parse(html) {
-    return parseWithInstructions(html, alwaysValid, defaultProcessingInstructions);
+
+  parse(html: string): React.ReactNode {
+    return this.parseWithInstructions(html, () => true, defaultMiddleware);
   }
-  return {
-    parse,
-    parseWithInstructions,
-  };
 }
-export {
-  Html2ReactParser,
-  alwaysValid,
-  defaultProcessingInstructions,
-  processDefaultNode,
-};

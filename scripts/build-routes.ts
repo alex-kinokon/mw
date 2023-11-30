@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
-import { promises as fs } from "fs";
-import { extname, resolve } from "path";
+/* eslint-disable unicorn/string-content */
+import { promises as fs } from "node:fs";
+import { extname, resolve } from "node:path";
 import { format } from "prettier";
 import glob from "fast-glob";
 
@@ -11,17 +12,17 @@ const pages = glob
     path: path
       .replace(/(^|\/)index\.page\.tsx$/, "")
       .replace(/\.page\.tsx$/, "")
-      .replace(/\[\.\.\.(.+?)\]/g, ":$1+")
-      .replace(/\[(.+?)\]/g, ":$1")
-      .replace(/\.\.\./g, "*"),
+      .replace(/\[\.{3}(.+?)]/g, ":$1+")
+      .replace(/\[(.+?)]/g, ":$1")
+      .replace(/\.{3}/g, "*"),
     importee: `./pages/${path.slice(0, -extname(path).length)}`,
     identifier: `Page${i + 1}`,
   }));
 
 const script = /* jsx */ `
   import { lazy } from "react"
-  import type { RouteComponentProps } from "wouter"
-  import { Route, Router } from "wouter"
+  import type { RouteComponentProps } from "./utils/router"
+  import { Route, Router } from "./utils/router"
 
   export const data: {
     path: string

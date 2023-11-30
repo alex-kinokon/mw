@@ -1,6 +1,6 @@
 import { Tab, Tabs } from "@blueprintjs/core";
 import { useMemo } from "react";
-import { Link } from "wouter";
+import { Link } from "~/utils/router";
 import type { MediaWiki } from "~/wiki";
 import { useSiteInfo } from "~/wiki/hooks";
 
@@ -121,7 +121,7 @@ export function PageTabs(props: PageTabsProps) {
     <Tabs selectedTabId={tabList.findIndex(x => x.active)}>
       {tabList.map(({ text, href }, i) => (
         <Tab id={i} key={href}>
-          <Link to={href}>{text}</Link>
+          <Link href={href}>{text}</Link>
         </Tab>
       ))}
     </Tabs>

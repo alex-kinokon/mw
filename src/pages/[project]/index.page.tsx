@@ -1,4 +1,4 @@
-import { Redirect } from "wouter";
+import { Redirect } from "~/utils/router";
 import { useMediaWiki } from "~/pages/_utils";
 import { useSiteInfo } from "~/wiki/hooks";
 
@@ -13,5 +13,5 @@ export default function ProjectHomePage({ params: { project } }: { params: PageP
   }
 
   const page = new URL(data.general.base).pathname.replace(/^\/wiki\//, "");
-  return <Redirect to={`/${project}/page/${page}`} />;
+  return <Redirect href={`/${project}/view/${page}`} />;
 }

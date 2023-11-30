@@ -1,11 +1,11 @@
 import { css } from "@emotion/css";
 import { Button, Classes, Menu, Popover } from "@blueprintjs/core";
-import { Link as RouterLink, useRoute } from "wouter";
+import { Link as RouterLink, useRoute } from "~/utils/router";
 import { useMediaWiki } from "~/pages/_utils";
 import { useSiteInfo } from "~/wiki/hooks";
 
 function useActiveProject() {
-  return useRoute("/:project/:a*")[1]!.project;
+  return useRoute("/:project/:a*")!.project;
 }
 
 export function ProjectPicker() {
@@ -18,10 +18,10 @@ export function ProjectPicker() {
       minimal
       content={
         <Menu>
-          <RouterLink className={Classes.MENU_ITEM} to="/">
+          <RouterLink className={Classes.MENU_ITEM} href="/org.wikipedia.en">
             Wikipedia
           </RouterLink>
-          <RouterLink className={Classes.MENU_ITEM} to="/wiktionary/en">
+          <RouterLink className={Classes.MENU_ITEM} href="/org.wiktionary.en">
             Wiktionary
           </RouterLink>
         </Menu>

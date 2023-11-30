@@ -1,9 +1,9 @@
-import { Route, Router } from "wouter";
 import { HelmetProvider } from "react-helmet-async";
 import { Suspense } from "react";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
+import { Route, Router } from "./utils/router";
 import { SideEffect } from "./components/SideEffect";
 import routes from "./routes.generated";
 import "normalize.css";
