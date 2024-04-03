@@ -19,9 +19,10 @@ const paramNameMap = new Map<string, string>(
 const complementary = fs.readFileSync("src/wiki/utils.ts", "utf-8");
 const stringify = (value: unknown) => JSON.stringify(value);
 
+const wrap = wordwrap(4, 80);
 function* yieldComment(comment: string, close = true) {
   yield "/**";
-  for (const line of nhm.translate(comment).split("\n")) {
+  for (const line of wrap(nhm.translate(comment))) {
     yield ` * ${line}`;
   }
   if (close) {
@@ -172,4 +173,62 @@ export function* getInterfaces(_: ModulePlus) {
     yield "\n";
   }
   yield "}";
+}
+
+// wordwrap
+// MIT License. https://github.com/substack/node-wordwrap#readme
+/**
+ * In "soft" mode, split chunks by `/(\S+\s+/` and don't break up chunks
+ * which are longer than `stop - start`, in "hard" mode, split chunks with
+ * `/\b/` and break up chunks longer than `stop - start`.
+ */
+type WordWrapMode = "soft" | "hard";
+
+function wordwrap(start = 0, stop: number, mode: WordWrapMode = "soft") {
+  const re = mode === "hard" ? /\b/ : /(\S+\s+)/;
+
+  return function (text: string) {
+    const chunks: string[] = [];
+    for (const x of text.toString().split(re)) {
+      if (mode === "hard") {
+        for (let i = 0; i < x.length; i += stop - start) {
+          chunks.push(x.slice(i, i + stop - start));
+        }
+      } else {
+        chunks.push(x);
+      }
+      continue;
+    }
+
+    const lines: string[] = [new Array(start + 1).join(" ")];
+
+    for (const rawChunk of chunks) {
+      if (rawChunk === "") {
+        continue;
+      }
+
+      const chunk = rawChunk.replace(/\t/g, "    ");
+
+      const i = lines.length - 1;
+      if (lines[i].length + chunk.length > stop) {
+        lines[i] = lines[i].replace(/\s+$/, "");
+
+        for (const c of chunk.split(/\n/)) {
+          lines.push(new Array(start + 1).join(" ") + c.replace(/^\s+/, ""));
+        }
+      } else if (/\n/.test(chunk)) {
+        const xs = chunk.split(/\n/);
+        lines[i] += xs.shift();
+        for (const c of xs) {
+          lines.push(new Array(start + 1).join(" ") + c.replace(/^\s+/, ""));
+        }
+      } else {
+        lines[i] += chunk;
+      }
+
+      continue;
+    }
+
+    return lines;
+  };
 }

@@ -1,6 +1,6 @@
 import { lazy } from "react";
 import type { RouteComponentProps } from "./utils/router";
-import { Route, Router } from "./utils/router";
+import { Route } from "./utils/router";
 
 export const data: {
   path: string;

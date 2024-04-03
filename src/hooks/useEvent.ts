@@ -16,7 +16,7 @@ function useEvent<Params extends any[] = [], Return = never>(
 
   return useCallback((...args: Params): Return => {
     // In a real implementation, this would throw if called during render
-    const fn = handlerRef.current!;
+    const fn = handlerRef.current;
     return fn(...args);
   }, []);
 }

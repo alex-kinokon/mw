@@ -8,11 +8,11 @@ export default defineConfig({
     target: ["chrome112", "safari16"],
   },
   plugins: [
+    tsconfigPaths(),
     react({
       babel: {
         plugins: ["@emotion/babel-plugin", "babel-plugin-macros"],
       },
     }),
-    tsconfigPaths(),
   ],
 });

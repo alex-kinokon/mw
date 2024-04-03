@@ -76,7 +76,7 @@ async function getModuleDefinition(module: string): Promise<ModulePlus[]> {
   );
 }
 
-const modules = (await Promise.all(["main", "main+**"].map(getModuleDefinition)))
+const modules = (await Array.fromAsync(["main", "main+**"], getModuleDefinition))
   .flat(1)
   .filter(m => !["json", "xml", "xmlfm"].includes(m.name) && !m.internal);
 
@@ -93,16 +93,14 @@ async function fromGenerator(code: Generator<string, void, unknown>) {
 
 fs.mkdirSync("src/wiki/__generated__", { recursive: true });
 
-await Promise.all(
-  modules.map(async mod => {
-    const jsCode = await fromGenerator(getModules(mod));
-    const interfaceCode = await fromGenerator(getInterfaces(mod));
-    fs.writeFileSync(
-      `src/wiki/__generated__/${mod.camelizedName}.ts`,
-      jsCode + interfaceCode
-    );
-  })
-);
+await Array.fromAsync(modules, async mod => {
+  const jsCode = await fromGenerator(getModules(mod));
+  const interfaceCode = await fromGenerator(getInterfaces(mod));
+  fs.writeFileSync(
+    `src/wiki/__generated__/${mod.camelizedName}.ts`,
+    jsCode + interfaceCode
+  );
+});
 
 fs.writeFileSync(
   `src/wiki/actions.generated.ts`,
