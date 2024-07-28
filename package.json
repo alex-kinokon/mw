@@ -26,9 +26,9 @@
     "wouter": "^3.1.0"
   },
   "devDependencies": {
-    "@aet/eslint-rules": "^0.0.19",
+    "@aet/eslint-rules": "^1.0.1-beta.11",
     "@aet/hooks": "npm:@proteria/hooks@0.0.2",
-    "@aet/icons": "0.0.1-beta.6",
+    "@aet/icons": "^0.0.1-beta.10",
     "@babel/helper-validator-identifier": "^7.22.20",
     "@blueprintjs/core": "^5.10.1",
     "@blueprintjs/icons": "^5.9.0",
