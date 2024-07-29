@@ -89,45 +89,22 @@ function TOCEntry({ item }: { item: wiki.Action.SectionTree }) {
   );
 }
 
-function TOC({
-  className,
-  value,
-}: {
-  className?: string;
-  value: wiki.Action.ParseResponseSection[];
-}) {
+function TOC({ value }: { value: wiki.Action.ParseResponseSection[] }) {
   const tree = useMemo(() => collapseTOCLevelIntoATree(value), [value]);
 
   return (
-    <div
-      className={cx(
-        className,
-        css`
-          overflow: scroll;
-          max-height: 100%;
-          padding: 10px 0;
-        `
-      )}
-    >
-      <ul
-        className={css`
-          list-style: none;
-          padding: 0;
-          margin: 0;
-        `}
-      >
-        {tree.map(item => (
-          <TOCEntry key={item.anchor} item={item} />
-        ))}
-      </ul>
-    </div>
+    <ul css="m-0 mt-4 list-none p-0">
+      {tree.map(item => (
+        <TOCEntry key={item.anchor} item={item} />
+      ))}
+    </ul>
   );
 }
 
 export function ArticleTableOfContent() {
   const { article } = useArticleContext();
   return (
-    <div css="mt-[var(--header-height)] h-[calc(100vh-var(--header-height))] overflow-scroll">
+    <div css="mt-[var(--header-height)] h-[calc(100vh-var(--header-height))] overflow-scroll px-2">
       {article != null && <TOC value={article.sections} />}
     </div>
   );

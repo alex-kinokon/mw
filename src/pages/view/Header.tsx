@@ -8,8 +8,8 @@ import {
 } from "@blueprintjs/core";
 import { SearchBox } from "../SearchBox";
 import { PageTabs } from "./Tabs";
-import { ProjectPicker } from "~/components/ProjectPicker";
-import { InterwikiLanguage } from "../InterwikiLanguage";
+import { ProjectPicker } from "~/pages/view/ProjectPicker";
+import { InterwikiLanguage } from "./InterwikiLanguage";
 
 export function ArticleHeader() {
   return (
@@ -31,8 +31,8 @@ export function ArticleHeader() {
           aria-label="Toggle dark mode"
           onClick={() => document.body.classList.toggle("bp5-dark")}
         />
-        <Popover content={<InterwikiLanguage />}>
-          <Button icon="globe" />
+        <Popover transitionDuration={100} content={<InterwikiLanguage />}>
+          <Button minimal icon="globe" />
         </Popover>
       </NavbarGroup>
     </Navbar>

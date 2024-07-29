@@ -109,7 +109,7 @@ export function ArticlePage({
       <div
         css={clsx(
           "grid min-h-full w-full grid-rows-[0_1fr]",
-          isMainPage ? "grid-cols-[0_minmax(0,1fr)]" : "grid-cols-[300px_minmax(0,1fr)]"
+          isMainPage ? "grid-cols-[0_minmax(0,1fr)]" : "grid-cols-[250px_minmax(0,1fr)]"
         )}
         style={{
           "--header-height": "50px",
@@ -124,17 +124,13 @@ export function ArticlePage({
           <div css="grow" />
         </div>
 
-        <div
-          css={clsx(
-            "flex pl-5 pr-14 pt-[var(--header-height)] grid-area-[content]",
-            isMainPage && "ml-24"
-          )}
-        >
-          <div css="top-[var(--header-height)] h-[calc(100vh-var(--header-height))] overflow-scroll">
-            <h2 css="mb-4 text-3xl font-semibold">
+        <div css={clsx("flex pl-5 pr-14 grid-area-[content]", isMainPage && "ml-24")}>
+          <div css="h-screen overflow-scroll">
+            <h2 css="mb-4 mt-[var(--header-height)] text-3xl font-semibold">
               {data != null && <HTML>{data.displaytitle}</HTML>}
             </h2>
             <Content
+              css="font-sans"
               className={cx(
                 className,
                 "mw-parser-output",

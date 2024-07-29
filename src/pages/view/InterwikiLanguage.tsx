@@ -1,19 +1,14 @@
 import { Classes, Menu } from "@blueprintjs/core";
 import { css, cx } from "@emotion/css";
 import { Link as RouterLink } from "~/utils/router";
-import { useArticleContext } from "./view/Context";
+import { useArticleContext } from "./Context";
 
 export function InterwikiLanguage() {
   const { article } = useArticleContext();
   const links = article?.langlinks ?? [];
 
   return (
-    <Menu
-      className={css`
-        max-height: 50vh;
-        overflow-y: auto;
-      `}
-    >
+    <Menu css="max-h-[50vh] overflow-y-auto">
       {links.map(({ lang, url, autonym }) => (
         <RouterLink
           className={cx(

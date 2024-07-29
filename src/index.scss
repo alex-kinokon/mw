@@ -44,6 +44,12 @@ $pt-dark-input-box-shadow: $pt-input-box-shadow;
     }
   }
 }
+.#{$ns}-navbar {
+  @include both {
+    background: light-dark(#fffc, #333c);
+    backdrop-filter: blur(2px);
+  }
+}
 
 .#{$ns}-popover {
   @include both {
