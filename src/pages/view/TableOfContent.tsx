@@ -3,6 +3,7 @@ import { css, cx } from "@emotion/css";
 import { useMemo, useState } from "react";
 import { HTML } from "~/components/HTML";
 import type * as wiki from "~/wiki";
+import { useArticleContext } from "./Context";
 
 function collapseTOCLevelIntoATree(sections: wiki.Action.ParseResponseSection[]) {
   const tree: wiki.Action.SectionTree[] = [];
@@ -88,7 +89,7 @@ function TOCEntry({ item }: { item: wiki.Action.SectionTree }) {
   );
 }
 
-export function TOC({
+function TOC({
   className,
   value,
 }: {
@@ -119,6 +120,15 @@ export function TOC({
           <TOCEntry key={item.anchor} item={item} />
         ))}
       </ul>
+    </div>
+  );
+}
+
+export function ArticleTableOfContent() {
+  const { article } = useArticleContext();
+  return (
+    <div css="mt-[var(--header-height)] h-[calc(100vh-var(--header-height))] overflow-scroll">
+      {article != null && <TOC value={article.sections} />}
     </div>
   );
 }

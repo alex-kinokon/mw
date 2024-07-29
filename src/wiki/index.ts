@@ -8,6 +8,7 @@ export type MediaWiki = ReturnType<typeof MediaWiki>;
 
 export function MediaWiki(host: string) {
   return {
+    host,
     action: ActionAPI(host),
     rest: new RestAPI(host),
   };

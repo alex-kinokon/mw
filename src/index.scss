@@ -1,23 +1,68 @@
-@import "@primer/primitives/dist/scss/colors/_light.scss";
-@import "@primer/primitives/dist/scss/colors/_dark.scss";
-
-body {
-  -moz-osx-font-smoothing: initial;
-  -webkit-font-smoothing: initial;
-  text-rendering: auto;
-}
-body.bp5-dark {
-  background-color: var(--color-canvas-default);
-  color: var(--color-fg-default);
-}
+@import "normalize.css";
 
 :root {
-  --font-weight-bold: 600;
+  --border-color: light-dark(#cdd7e1, #32383e);
+  --box-shadow-range: light-dark(#15151514, #00000099);
 }
 
-:root[data-theme="light"] {
-  @include primer-colors-light();
+$pt-font-family:
+  Inter,
+  -apple-system,
+  "BlinkMacSystemFont",
+  "Segoe UI",
+  "Roboto",
+  "Oxygen",
+  "Ubuntu",
+  "Cantarell",
+  "Open Sans",
+  "Helvetica Neue",
+  sans-serif;
+$pt-border-radius: 5px;
+$pt-dark-app-background-color: #111;
+$pt-dark-app-elevated-background-color: #191919;
+$pt-icon-color: light-dark(#636b74, #9fa6ad);
+$pt-input-box-shadow: var(--box-shadow-range) 0 1px 2px;
+$pt-dark-input-box-shadow: $pt-input-box-shadow;
+
+@import "@blueprintjs/core/lib/scss/variables";
+@import "@blueprintjs/core/src/blueprint";
+
+@mixin both() {
+  @content;
+  .#{$ns}-dark & {
+    @content;
+  }
 }
-:root[data-theme="dark"] {
-  @include primer-colors-dark();
+
+.#{$ns}-input {
+  @include both {
+    border: 1px solid var(--border-color);
+    &:focus {
+      box-shadow: inset 0 0 0 2px light-dark(#0b6bcb, #0b6bcb);
+      border: none;
+      padding-left: 11px;
+    }
+  }
+}
+
+.#{$ns}-popover {
+  @include both {
+    border: 1px solid var(--border-color);
+    box-shadow:
+      #000 0 0,
+      var(--box-shadow-range) 0 2px 8px -2px,
+      var(--box-shadow-range) 0 6px 12px -2px;
+  }
+  .#{$ns}-input {
+    border: none;
+    box-shadow: none;
+  }
+}
+
+.#{$ns}-button:not([class*="{$ns}-intent-"]):not(.#{$ns}-minimal) {
+  box-shadow: inset 0 0 0 0.7px #11141833;
+}
+
+body.#{$ns}-dark {
+  background-color: $pt-dark-app-background-color;
 }

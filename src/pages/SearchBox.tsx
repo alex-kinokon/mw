@@ -5,18 +5,18 @@ import { css } from "@emotion/css";
 import { MenuItem } from "@blueprintjs/core";
 import { Link as RouterLink } from "~/utils/router";
 import { HTML } from "~/components/HTML";
-import type { MediaWiki } from "~/wiki";
 import { useDebouncedValue } from "~/hooks/useDebouncedValue";
+import { useArticleContext } from "./view/Context";
 
 interface SearchBoxProps {
   className?: string;
-  wiki: MediaWiki;
   active?: string;
 }
 
-export function SearchBox({ active, className, wiki }: SearchBoxProps) {
+export function SearchBox({ active, className }: SearchBoxProps) {
   const [value, setValue] = useState("");
   const debouncedValue = useDebouncedValue(value, 500);
+  const { wiki } = useArticleContext();
 
   const { data } = useQuery({
     enabled: debouncedValue.length > 0,

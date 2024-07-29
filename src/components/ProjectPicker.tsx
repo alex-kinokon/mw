@@ -1,7 +1,7 @@
 import { css } from "@emotion/css";
 import { Button, Classes, Menu, Popover } from "@blueprintjs/core";
 import { Link as RouterLink, useRoute } from "~/utils/router";
-import { useMediaWiki } from "~/pages/_utils";
+import { useMediaWiki } from "~/hooks/useMediaWiki";
 import { useSiteInfo } from "~/wiki/hooks";
 
 function useActiveProject() {

@@ -3,12 +3,8 @@ import { Suspense } from "react";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
-import { Route, Router } from "./utils/router";
 import { SideEffect } from "./components/SideEffect";
-import routes from "./routes.generated";
-import "normalize.css";
-import "@blueprintjs/core/lib/css/blueprint.css";
-import "@blueprintjs/icons/lib/css/blueprint-icons.css";
+import routes from "./routes";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,12 +22,7 @@ const App = () => (
   <HelmetProvider>
     <SideEffect />
     <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
-      <Suspense fallback={null}>
-        <Router>
-          {routes}
-          <Route>404</Route>
-        </Router>
-      </Suspense>
+      <Suspense fallback={null}>{routes}</Suspense>
     </PersistQueryClientProvider>
   </HelmetProvider>
 );

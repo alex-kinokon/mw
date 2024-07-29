@@ -1,9 +1,12 @@
 import { Classes, Menu } from "@blueprintjs/core";
 import { css, cx } from "@emotion/css";
 import { Link as RouterLink } from "~/utils/router";
-import type { ParsePageResponse } from "~/wiki/action";
+import { useArticleContext } from "./view/Context";
 
-export function InterwikiLanguage({ links }: { links: ParsePageResponse["langlinks"] }) {
+export function InterwikiLanguage() {
+  const { article } = useArticleContext();
+  const links = article?.langlinks ?? [];
+
   return (
     <Menu
       className={css`

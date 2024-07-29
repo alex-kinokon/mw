@@ -1,12 +1,14 @@
-import { useMediaWiki } from "~/pages/_utils";
+import { useMediaWiki } from "~/hooks/useMediaWiki";
 import { getAllRevisions } from "~/wiki/actions.generated";
 
-interface PageParams {
-  readonly project: string;
-  readonly page: string;
-}
-
-export default function BlamePage({ params }: { params: PageParams }) {
+export function BlamePage({
+  params,
+}: {
+  params: {
+    readonly project: string;
+    readonly page: string;
+  };
+}) {
   const { project } = params;
   const wiki = useMediaWiki(project);
 

@@ -1,8 +1,8 @@
 import { Tab, Tabs } from "@blueprintjs/core";
 import { useMemo } from "react";
 import { Link } from "~/utils/router";
-import type { MediaWiki } from "~/wiki";
 import { useSiteInfo } from "~/wiki/hooks";
+import { useArticleContext } from "./Context";
 
 // https://en.wikipedia.org/wiki/Wikipedia:Namespace#Pseudo-namespaces
 // [undefined, 'Talk', 'User', 'User talk', 'Project', 'Project talk', 'File', 'File talk', 'MediaWiki', 'MediaWiki talk', 'Template', 'Template talk', 'Help', 'Help talk', 'Category', 'Category talk', 'Portal', 'Portal talk', 'Draft', 'Draft talk', 'TimedText', 'TimedText talk', 'Module', 'Module talk', 'Gadget', 'Gadget talk', 'Gadget definition', 'Gadget definition talk', 'Media', 'Special']
@@ -39,17 +39,14 @@ const NS = {
   Special: "Special",
 };
 
-interface PageTabsProps {
-  wiki: MediaWiki;
-  page: string;
-}
-
 const to = (href: string) => `./${href}`;
 
-function useTabList({
-  wiki,
-  page,
-}: PageTabsProps): { text: string; href: string; active?: boolean }[] {
+function useTabList(): {
+  text: string;
+  href: string;
+  active?: boolean;
+}[] {
+  const { wiki, page } = useArticleContext();
   const { data: siteInfo } = useSiteInfo(wiki);
 
   const namespaceInfo = siteInfo?.namespaces;
@@ -113,8 +110,8 @@ function useTabList({
   }
 }
 
-export function PageTabs(props: PageTabsProps) {
-  const tabList = useTabList(props);
+export function PageTabs() {
+  const tabList = useTabList();
   if (!tabList.length) return null;
 
   return (
